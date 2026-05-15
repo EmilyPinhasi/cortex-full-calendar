@@ -22,7 +22,15 @@ import type {
   EventSourceInput
 } from '@fullcalendar/core';
 
-import { Menu, activeDocument } from 'obsidian';
+import { Menu } from 'obsidian';
+
+// The named `activeDocument` import from 'obsidian' can resolve to `undefined`
+// in lazy-loaded chunks (the runtime exposes it as a global on `window` instead).
+// Read it lazily each call and fall back to `document` so callers never crash.
+const getActiveDocument = (): Document =>
+  (typeof window !== 'undefined' &&
+    (window as Window & { activeDocument?: Document }).activeDocument) ||
+  document;
 import type { PluginDef } from '@fullcalendar/core';
 import type { RecurringInstanceState } from '../../../../providers/Provider';
 import { createDateNavigation } from '../../../../features/navigation/DateNavigation';
@@ -623,7 +631,7 @@ export async function renderCalendar(
 
     editable: modifyEvent && true,
     // Keep drag mirror anchored to the viewport, not transformed Obsidian panes.
-    fixedMirrorParent: (activeDocument ?? document).body,
+    fixedMirrorParent: getActiveDocument().body,
     eventDrop: modifyEventCallback,
     eventResize: modifyEventCallback,
 
@@ -651,7 +659,7 @@ export async function renderCalendar(
       });
       if (toggleTask) {
         if (event.extendedProps.isTask) {
-          const checkbox = activeDocument.createEl('input');
+          const checkbox = getActiveDocument().createEl('input');
           checkbox.type = 'checkbox';
           checkbox.checked = !!event.extendedProps.taskCompleted;
 
@@ -799,20 +807,20 @@ export async function renderCalendar(
     const inputWrapEl =
       keepWrapEl ||
       (() => {
-        const wrapEl = activeDocument.createDiv();
+        const wrapEl = getActiveDocument().createDiv();
         wrapEl.className = 'ofc-toolbar-search-input-wrap';
         wrapEl.setCssProps({
           width: searchExpanded || searchQuery ? '180px' : '0px'
         });
 
-        const inputEl = activeDocument.createEl('input');
+        const inputEl = getActiveDocument().createEl('input');
         inputEl.className = 'ofc-toolbar-search-input';
         inputEl.type = 'text';
         inputEl.placeholder = 'Search events...';
         inputEl.value = searchQuery;
         inputEl.ariaLabel = 'Search events';
 
-        const clearEl = activeDocument.createEl('button');
+        const clearEl = getActiveDocument().createEl('button');
         clearEl.className = 'clickable-icon ofc-toolbar-search-clear';
         clearEl.type = 'button';
         clearEl.ariaLabel = 'Clear search';
@@ -915,7 +923,7 @@ export async function renderCalendar(
       return;
     }
 
-    if (isEditableTarget(event.target) || isEditableTarget(activeDocument.activeElement)) {
+    if (isEditableTarget(event.target) || isEditableTarget(getActiveDocument().activeElement)) {
       return;
     }
 
@@ -980,12 +988,13 @@ export async function renderCalendar(
 
   updateCurrentOrNextEventHighlight();
   const activeHighlightInterval = window.setInterval(updateCurrentOrNextEventHighlight, 60_000);
+  const visibilityDoc = getActiveDocument();
   const onVisibilityChange = () => {
-    if (activeDocument.visibilityState === 'visible') {
+    if (visibilityDoc.visibilityState === 'visible') {
       updateCurrentOrNextEventHighlight();
     }
   };
-  activeDocument.addEventListener('visibilitychange', onVisibilityChange);
+  visibilityDoc.addEventListener('visibilitychange', onVisibilityChange);
 
   const originalDestroy = cal.destroy.bind(cal);
   cal.destroy = () => {
@@ -995,7 +1004,7 @@ export async function renderCalendar(
     containerEl.removeEventListener('touchstart', onTouchStartNavigate);
     containerEl.removeEventListener('touchend', onTouchEndNavigate);
     window.clearInterval(activeHighlightInterval);
-    activeDocument.removeEventListener('visibilitychange', onVisibilityChange);
+    visibilityDoc.removeEventListener('visibilitychange', onVisibilityChange);
     originalDestroy();
   };
 
