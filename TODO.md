@@ -48,6 +48,16 @@ Original strip plan was deferred so we could get a working build out. Now that r
 
 ---
 
+## Coexistence with upstream (low priority — only if both plugins stay enabled)
+
+- [ ] **Rename workspace event names** so this fork and upstream FCR don't trigger each other's listeners when both run side-by-side. Events to rename: `full-calendar:settings-updated`, `full-calendar:sources-changed`, `full-calendar:view-config-changed`. Files: `src/main.ts` (multiple), `src/core/EventCache.ts:101-111`. Suggested prefix: `cortex-full-calendar:`. Not crash-causing, but causes redundant cache resets and weird state sync if both plugins are active.
+
+- [ ] **Rename Obsidian protocol handler** `full-calendar-google-auth` → `cortex-full-calendar-google-auth` in `src/main.ts:313`. Avoids both plugins competing for the OAuth callback. Note: this is the redirect URI Google sends users to after auth, so changing it would require updating the Google OAuth client config — only do this once Google auth is something the user actually uses (currently they don't, plugin doesn't load yet).
+
+- [ ] **CSS class prefix** — many CSS classes use `full-calendar-` prefix (`src/ui/settings/SettingsTab.tsx` and others). Each plugin gets its own DOM tree so styles don't truly conflict, but consistency is nice. Optional.
+
+---
+
 ## Build / release hygiene (low priority — nice to have)
 
 - [ ] **Stop committing `main.js` + `styles.css` to the branch.** Releases are now the source of truth, so the committed copies are redundant and noisy in diffs. To clean up: `git rm --cached main.js styles.css`, add both back to `.gitignore`, commit. (Only do this *after* confirming releases work end-to-end and BRAT installs successfully — they're currently a fallback.)
