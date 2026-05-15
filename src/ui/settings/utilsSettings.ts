@@ -167,6 +167,19 @@ export function migrateAndSanitizeSettings(settings: unknown): {
   // global googleAuth removed implicitly by not copying it forward
   // === END FINAL MIGRATION ===
 
+  // RELINK: When sources lost their googleAccountId (e.g. coexistence with the
+  // upstream plugin's data file) but exactly one account is connected, bind
+  // orphans to it. Multi-account vaults need manual relinking.
+  if (newSettings.googleAccounts.length === 1) {
+    const onlyAccountId = newSettings.googleAccounts[0].id;
+    newSettings.calendarSources.forEach(source => {
+      if (source.type === 'google' && !source.googleAccountId) {
+        source.googleAccountId = onlyAccountId;
+        needsSave = true;
+      }
+    });
+  }
+
   // MIGRATION 2: Ensure all calendar sources have a stable ID.
   const { updated, sources } = ensureCalendarIds(newSettings.calendarSources);
   if (updated) {
