@@ -75,6 +75,7 @@ export class ProviderRegistry {
     this.register('tasks', () => import('./tasks/TasksPluginProvider'));
     this.register('tasknotes', () => import('./tasknotes/TaskNotesProvider'));
     this.register('bases', () => import('./bases/BasesProvider'));
+    this.register('basefull', () => import('./basefull/BaseFullProvider'));
   }
 
   public register(type: string, loader: ProviderLoader): void {

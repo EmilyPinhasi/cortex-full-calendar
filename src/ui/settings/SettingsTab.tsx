@@ -132,7 +132,8 @@ export function addCalendarButton(
           outlook: t('settings.calendars.types.outlook'),
           tasks: t('settings.calendars.types.tasks'),
           tasknotes: t('settings.calendars.types.tasknotes'),
-          bases: t('settings.calendars.types.bases')
+          bases: t('settings.calendars.types.bases'),
+          basefull: t('settings.calendars.types.basefull')
         }))
     )
     .addExtraButton(button => {
@@ -141,7 +142,7 @@ export function addCalendarButton(
       button.onClick(async () => {
         const sourceType = dropdown.getValue();
 
-        if (sourceType === 'bases') {
+        if (sourceType === 'bases' || sourceType === 'basefull') {
           const app = plugin.app as unknown as {
             internalPlugins?: { getPluginById: (id: string) => unknown };
             plugins?: { getPlugin: (id: string) => unknown };

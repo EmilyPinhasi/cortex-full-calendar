@@ -525,7 +525,8 @@
         "outlook": "Outlook Calendar",
         "tasks": "Obsidian Tasks",
         "tasknotes": "TaskNotes",
-        "bases": "Obsidian Bases"
+        "bases": "Obsidian Bases",
+        "basefull": "Base Full"
       },
       "fullNote": {
         "directory": {

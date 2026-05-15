@@ -54,7 +54,13 @@ interface MilestoneState {
 }
 
 const REMOTE_PROVIDER_TYPES: ProviderType[] = ['ical', 'caldav', 'google', 'outlook'];
-const LOCAL_TRACKED_PROVIDER_TYPES: ProviderType[] = ['local', 'dailynote', 'tasks', 'tasknotes'];
+const LOCAL_TRACKED_PROVIDER_TYPES: ProviderType[] = [
+  'local',
+  'dailynote',
+  'tasks',
+  'tasknotes',
+  'basefull'
+];
 const ALL_PROVIDER_TYPES: ProviderType[] = [
   'local',
   'dailynote',
@@ -64,7 +70,8 @@ const ALL_PROVIDER_TYPES: ProviderType[] = [
   'outlook',
   'tasks',
   'tasknotes',
-  'bases'
+  'bases',
+  'basefull'
 ];
 
 function ensureMilestonesState(): MilestoneState {

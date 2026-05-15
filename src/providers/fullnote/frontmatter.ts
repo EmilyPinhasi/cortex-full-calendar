@@ -14,8 +14,6 @@
  * @license See LICENSE.md
  */
 
-import { OFCEvent } from '../../types';
-
 const FRONTMATTER_SEPARATOR = '---';
 
 /**
@@ -76,7 +74,7 @@ function stringifyYamlLine(k: string, v: PrintableAtom): string {
   return `${k}: ${v}`;
 }
 
-export function newFrontmatter(fields: Partial<OFCEvent>): string {
+export function newFrontmatter(fields: Record<string, unknown>): string {
   const newFields = { ...fields };
   if (newFields.type === 'single') delete newFields.type;
   if (!newFields.allDay) delete newFields.allDay;
@@ -88,7 +86,10 @@ export function newFrontmatter(fields: Partial<OFCEvent>): string {
     .join('\n');
 }
 
-export function modifyFrontmatterString(page: string, modifications: Partial<OFCEvent>): string {
+export function modifyFrontmatterString(
+  page: string,
+  modifications: Record<string, unknown>
+): string {
   const frontmatter = extractFrontmatter(page);
   const sourceLines = frontmatter ? frontmatter.split('\n') : [];
 
