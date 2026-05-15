@@ -26,7 +26,8 @@ function getCalendarColors(color: string | null | undefined): {
   color: string;
   textColor: string;
 } {
-  let textVar = getComputedStyle(activeDocument.body).getPropertyValue('--text-on-accent');
+  const doc = activeDocument ?? document;
+  let textVar = getComputedStyle(doc.body).getPropertyValue('--text-on-accent');
   if (color) {
     const m = color.slice(1).match(color.length === 7 ? /(\S{2})/g : /(\S{1})/g);
     if (m) {
@@ -41,7 +42,7 @@ function getCalendarColors(color: string | null | undefined): {
   }
 
   return {
-    color: color || getComputedStyle(activeDocument.body).getPropertyValue('--interactive-accent'),
+    color: color || getComputedStyle(doc.body).getPropertyValue('--interactive-accent'),
     textColor: textVar
   };
 }
