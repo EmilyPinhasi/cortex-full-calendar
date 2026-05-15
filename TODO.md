@@ -8,9 +8,10 @@ Format: `- [ ]` = pending, `- [x]` = done. Group order is roughly priority; with
 
 ## Attribution / branding cleanup (high priority — these are user-facing)
 
-- [ ] **Update the changelog / "What's New" announcement.** Currently displays the upstream FCR's changelog history, which is wrong for this fork. The user wants this replaced so the in-app changelog reflects *this* fork's history (or is emptied / replaced with a single "Forked from FCR vX.Y.Z" entry).
-  - Files: `src/ui/settings/changelogs/changelogData.ts`, `src/ui/settings/changelogs/Changelog.tsx`, `src/ui/settings/changelogs/renderWhatsNew.ts`
-  - Decision needed: replace with empty changelog, replace with a fork-notice entry, or remove the "What's New" UI entirely.
+- [ ] **Remove the "What's New" section from settings entirely.** Currently displays the upstream FCR's changelog history, which is wrong for this fork. Decision made: remove the UI rather than maintain a fork changelog.
+  - Files to delete/strip: `src/ui/settings/changelogs/changelogData.ts`, `src/ui/settings/changelogs/Changelog.tsx`, `src/ui/settings/changelogs/renderWhatsNew.ts`, `src/ui/modals/WhatsNewModal.tsx`
+  - Also remove: the "What's New" call site(s) in `src/ui/settings/SettingsTab.tsx` and any `WhatsNewModal` invocation in `src/main.ts`.
+  - Check i18n keys for `whatsNew` / changelog strings in `src/features/i18n/locales/*.json` and prune unused ones.
 
 - [ ] **Fix "Report a bug" / "Discussions" links** in the settings UI. They currently point at the upstream's GitHub issue tracker — anyone clicking them would file a bug at YouFoundJK's repo instead of this fork.
   - File: `src/ui/settings/sections/calendars/renderFooter.ts` (lines 21 and 28)
