@@ -140,6 +140,7 @@ export interface CalendarProvider<TConfig> {
 
   getSettingsRowComponent(): FCReactComponent<{
     source: Partial<import('../types').CalendarInfo>;
+    onSourceChange?: (source: Partial<import('../types').CalendarInfo>) => void;
   }>;
 }
 

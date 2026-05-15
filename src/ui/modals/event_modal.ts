@@ -30,6 +30,45 @@ import FullCalendarPlugin from '../../main';
 import { ConfirmModal } from './ConfirmModal';
 import { openFileForEvent } from '../../utils/eventActions';
 import { t } from '../../features/i18n/i18n';
+import { parseYaml } from 'obsidian';
+import type { CustomPropertyDefinition } from './EditEvent';
+
+function isCustomPropertyValue(value: unknown): value is string | number | boolean | null {
+  return (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  );
+}
+
+function getCustomPropertyDefinitions(info: unknown): CustomPropertyDefinition[] {
+  const template =
+    typeof info === 'object' &&
+    info !== null &&
+    'customPropertyTemplate' in info &&
+    typeof info.customPropertyTemplate === 'string'
+      ? info.customPropertyTemplate
+      : undefined;
+
+  if (!template?.trim()) return [];
+  try {
+    const parsed: unknown = parseYaml(template);
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return [];
+    }
+    return Object.entries(parsed as Record<string, unknown>)
+      .filter((entry): entry is [string, string | number | boolean | null] =>
+        isCustomPropertyValue(entry[1])
+      )
+      .map(([name, defaultValue]) => ({
+        name,
+        defaultValue
+      }));
+  } catch {
+    return [];
+  }
+}
 
 export function launchCreateModal(
   plugin: FullCalendarPlugin,
@@ -48,7 +87,8 @@ export function launchCreateModal(
       return {
         id: info.id,
         type: info.type,
-        name: info.name
+        name: info.name,
+        customPropertyDefinitions: getCustomPropertyDefinitions(info)
       };
     })
     .filter((c): c is NonNullable<typeof c> => !!c);
@@ -124,7 +164,8 @@ export function launchEditModal(plugin: FullCalendarPlugin, eventId: string) {
       return {
         id: info.id,
         type: info.type,
-        name: info.name
+        name: info.name,
+        customPropertyDefinitions: getCustomPropertyDefinitions(info)
       };
     })
     .filter((c): c is NonNullable<typeof c> => !!c);

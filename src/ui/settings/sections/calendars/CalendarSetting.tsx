@@ -151,6 +151,17 @@ export class CalendarSettings
     });
   };
 
+  updateSource = (index: number, source: Partial<CalendarInfo>) => {
+    this.setState(state => {
+      const newSources = [...state.sources];
+      newSources[index] = { ...newSources[index], ...source } as CalendarInfo;
+      return {
+        sources: newSources,
+        dirty: true
+      };
+    });
+  };
+
   render() {
     return (
       <div className="u-w-full">
@@ -160,6 +171,7 @@ export class CalendarSettings
             setting={s}
             plugin={this.props.plugin}
             onNameChange={(name: string) => this.updateSourceName(idx, name)}
+            onSourceChange={(source: Partial<CalendarInfo>) => this.updateSource(idx, source)}
             onColorChange={(color: string) =>
               this.setState(state => ({
                 sources: [
@@ -209,6 +221,7 @@ interface ProviderAwareCalendarSettingsRowProps {
   setting: Partial<CalendarInfo>;
   onColorChange: (s: string) => void;
   onNameChange: (s: string) => void;
+  onSourceChange: (source: Partial<CalendarInfo>) => void;
   deleteCalendar: () => void;
   moveUp: () => void;
   moveDown: () => void;
@@ -221,6 +234,7 @@ export const ProviderAwareCalendarSettingRow = ({
   setting,
   onColorChange,
   onNameChange,
+  onSourceChange,
   deleteCalendar,
   moveUp,
   moveDown,
@@ -264,7 +278,7 @@ export const ProviderAwareCalendarSettingRow = ({
     const ProviderContent = provider.getSettingsRowComponent();
     return (
       <CalendarSettingRow {...rowProps}>
-        <ProviderContent source={setting} />
+        <ProviderContent source={setting} onSourceChange={onSourceChange} />
       </CalendarSettingRow>
     );
   }

@@ -59,6 +59,8 @@ export const TimeSchema = z.discriminatedUnion('allDay', [
   })
 ]);
 
+const CustomPropertyValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+
 // MODIFICATION HAPPENS HERE
 export const CommonSchema = z.object({
   title: z.string(), // This will now store the CLEAN title.
@@ -79,7 +81,8 @@ export const CommonSchema = z.object({
     .object({
       value: z.number().min(0).max(1440)
     })
-    .optional()
+    .optional(),
+  customProperties: z.record(CustomPropertyValueSchema).optional()
 });
 
 export const EventSchema = z
