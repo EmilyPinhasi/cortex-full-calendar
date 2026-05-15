@@ -448,23 +448,23 @@ const MILESTONE_DEFINITIONS: MilestoneDefinition[] = [
 function queueMilestoneToast(milestone: NewlyUnlockedMilestone, index: number): void {
   const delay = index * 220;
   window.setTimeout(() => {
-    if (typeof activeDocument === 'undefined') return;
+    const doc = activeDocument ?? document;
 
-    const existingRoot = activeDocument.getElementById('ofc-milestone-toast-root');
-    const root = existingRoot ?? activeDocument.createDiv();
+    const existingRoot = doc.getElementById('ofc-milestone-toast-root');
+    const root = existingRoot ?? doc.createElement('div');
     if (!existingRoot) {
       root.id = 'ofc-milestone-toast-root';
-      activeDocument.body.appendChild(root);
+      doc.body.appendChild(root);
     }
 
-    const toast = activeDocument.createDiv();
+    const toast = doc.createElement('div');
     toast.className = 'ofc-milestone-toast';
 
-    const titleEl = activeDocument.createDiv();
+    const titleEl = doc.createElement('div');
     titleEl.className = 'ofc-milestone-toast-title';
     titleEl.textContent = t('notices.milestones.unlockedTitle');
 
-    const bodyEl = activeDocument.createDiv();
+    const bodyEl = doc.createElement('div');
     bodyEl.className = 'ofc-milestone-toast-body';
     bodyEl.textContent = t('notices.milestones.unlockedBody', {
       title: milestone.title,

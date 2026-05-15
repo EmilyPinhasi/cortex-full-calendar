@@ -31,6 +31,10 @@ const getActiveDocument = (): Document =>
   (typeof window !== 'undefined' &&
     (window as Window & { activeDocument?: Document }).activeDocument) ||
   document;
+
+const createDetachedElement = <K extends keyof HTMLElementTagNameMap>(
+  tagName: K
+): HTMLElementTagNameMap[K] => getActiveDocument().createElement(tagName);
 import type { PluginDef } from '@fullcalendar/core';
 import type { RecurringInstanceState } from '../../../../providers/Provider';
 import { createDateNavigation } from '../../../../features/navigation/DateNavigation';
@@ -659,7 +663,7 @@ export async function renderCalendar(
       });
       if (toggleTask) {
         if (event.extendedProps.isTask) {
-          const checkbox = getActiveDocument().createEl('input');
+          const checkbox = createDetachedElement('input');
           checkbox.type = 'checkbox';
           checkbox.checked = !!event.extendedProps.taskCompleted;
 
@@ -807,20 +811,20 @@ export async function renderCalendar(
     const inputWrapEl =
       keepWrapEl ||
       (() => {
-        const wrapEl = getActiveDocument().createDiv();
+        const wrapEl = createDetachedElement('div');
         wrapEl.className = 'ofc-toolbar-search-input-wrap';
         wrapEl.setCssProps({
           width: searchExpanded || searchQuery ? '180px' : '0px'
         });
 
-        const inputEl = getActiveDocument().createEl('input');
+        const inputEl = createDetachedElement('input');
         inputEl.className = 'ofc-toolbar-search-input';
         inputEl.type = 'text';
         inputEl.placeholder = 'Search events...';
         inputEl.value = searchQuery;
         inputEl.ariaLabel = 'Search events';
 
-        const clearEl = getActiveDocument().createEl('button');
+        const clearEl = createDetachedElement('button');
         clearEl.className = 'clickable-icon ofc-toolbar-search-clear';
         clearEl.type = 'button';
         clearEl.ariaLabel = 'Clear search';
