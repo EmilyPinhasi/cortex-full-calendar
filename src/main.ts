@@ -150,7 +150,7 @@ export default class FullCalendarPlugin extends Plugin {
     type WorkspaceEvents = Workspace & {
       on: Workspace['on'] &
         ((
-          name: 'full-calendar:settings-updated',
+          name: 'cortex-full-calendar:settings-updated',
           cb: (settings: FullCalendarSettings) => unknown,
           ctx?: unknown
         ) => EventRef) &
@@ -162,19 +162,19 @@ export default class FullCalendarPlugin extends Plugin {
     const workspaceEvents = this.app.workspace as WorkspaceEvents;
     this.registerEvent(
       workspaceEvents.on(
-        'full-calendar:settings-updated',
+        'cortex-full-calendar:settings-updated',
         this.#notificationManager.update.bind(this.#notificationManager)
       )
     );
     this.registerEvent(
       workspaceEvents.on(
-        'full-calendar:settings-updated',
+        'cortex-full-calendar:settings-updated',
         this.#statusBarManager.update.bind(this.#statusBarManager)
       )
     );
     this.registerEvent(
       workspaceEvents.on(
-        'full-calendar:settings-updated',
+        'cortex-full-calendar:settings-updated',
         PluginState.getCache().updateSettings.bind(PluginState.getCache())
       )
     );
@@ -388,7 +388,7 @@ export default class FullCalendarPlugin extends Plugin {
     await super.saveData(PluginState.getSettings());
 
     // Publish general settings update event for all subscribers
-    this.app.workspace.trigger('full-calendar:settings-updated', PluginState.getSettings());
+    this.app.workspace.trigger('cortex-full-calendar:settings-updated', PluginState.getSettings());
 
     // Compare old and new settings to determine which specific events to publish.
     const newSettingsString = JSON.stringify(PluginState.getSettings());
@@ -403,7 +403,7 @@ export default class FullCalendarPlugin extends Plugin {
     const oldSourcesString = JSON.stringify(oldSettingsObj.calendarSources);
 
     if (newSourcesString !== oldSourcesString) {
-      this.app.workspace.trigger('full-calendar:sources-changed');
+      this.app.workspace.trigger('cortex-full-calendar:sources-changed');
     }
 
     const viewSettingsChanged =
@@ -419,7 +419,7 @@ export default class FullCalendarPlugin extends Plugin {
         JSON.stringify(newSettingsObj.categorySettings);
 
     if (viewSettingsChanged) {
-      this.app.workspace.trigger('full-calendar:view-config-changed');
+      this.app.workspace.trigger('cortex-full-calendar:view-config-changed');
     }
 
     // Update the snapshot

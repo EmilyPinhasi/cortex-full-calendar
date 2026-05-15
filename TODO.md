@@ -57,7 +57,7 @@ Original strip plan was deferred so we could get a working build out. Now that r
 
 ## Coexistence with upstream (low priority — only if both plugins stay enabled)
 
-- [ ] **Rename workspace event names** so this fork and upstream FCR don't trigger each other's listeners when both run side-by-side. Events to rename: `full-calendar:settings-updated`, `full-calendar:sources-changed`, `full-calendar:view-config-changed`. Files: `src/main.ts` (multiple), `src/core/EventCache.ts:101-111`. Suggested prefix: `cortex-full-calendar:`. Not crash-causing, but causes redundant cache resets and weird state sync if both plugins are active.
+- [x] **Rename workspace event names** so this fork and upstream FCR don't trigger each other's listeners when both run side-by-side. Events to rename: `full-calendar:settings-updated`, `full-calendar:sources-changed`, `full-calendar:view-config-changed`. Files: `src/main.ts` (multiple), `src/core/EventCache.ts:101-111`. Suggested prefix: `cortex-full-calendar:`. Not crash-causing, but causes redundant cache resets and weird state sync if both plugins are active.
 
 - [ ] **Rename Obsidian protocol handler** `full-calendar-google-auth` → `cortex-full-calendar-google-auth` in `src/main.ts:313`. Avoids both plugins competing for the OAuth callback. Note: this is the redirect URI Google sends users to after auth, so changing it would require updating the Google OAuth client config — only do this once Google auth is something the user actually uses (currently they don't, plugin doesn't load yet).
 

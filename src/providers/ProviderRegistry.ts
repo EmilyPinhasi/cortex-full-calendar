@@ -785,7 +785,7 @@ export class ProviderRegistry {
       this.plugin.app.workspace as unknown as {
         on: (name: string, cb: () => void) => void;
       }
-    ).on('full-calendar:sources-changed', this.onSourcesChanged);
+    ).on('cortex-full-calendar:sources-changed', this.onSourcesChanged);
   }
 
   public stopListening(): void {
@@ -793,7 +793,7 @@ export class ProviderRegistry {
       this.plugin.app.workspace as unknown as {
         off: (name: string, cb: () => void) => void;
       }
-    ).off('full-calendar:sources-changed', this.onSourcesChanged);
+    ).off('cortex-full-calendar:sources-changed', this.onSourcesChanged);
     for (const timer of this.providerRetryTimers.values()) {
       window.clearTimeout(timer);
     }
