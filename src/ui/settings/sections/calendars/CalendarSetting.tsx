@@ -27,6 +27,10 @@ interface CalendarSettingRowProps {
   onColorChange: (s: string) => void;
   onNameChange: (s: string) => void;
   deleteCalendar: () => void;
+  moveUp: () => void;
+  moveDown: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }
 
 // The new stable row component
@@ -35,13 +39,39 @@ const CalendarSettingRow = ({
   setting,
   onColorChange,
   onNameChange,
-  deleteCalendar
+  deleteCalendar,
+  moveUp,
+  moveDown,
+  canMoveUp,
+  canMoveDown
 }: CalendarSettingRowProps) => {
   return (
     <div className="setting-item">
       <button type="button" onClick={deleteCalendar} className="fc-setting-delete-btn">
         ✕
       </button>
+      <div className="fc-setting-reorder-controls">
+        <button
+          type="button"
+          onClick={moveUp}
+          disabled={!canMoveUp}
+          className="fc-setting-reorder-btn"
+          aria-label="Move up"
+          title="Move up"
+        >
+          ▲
+        </button>
+        <button
+          type="button"
+          onClick={moveDown}
+          disabled={!canMoveDown}
+          className="fc-setting-reorder-btn"
+          aria-label="Move down"
+          title="Move down"
+        >
+          ▼
+        </button>
+      </div>
       <div className="setting-item-control u-flex-1">
         <input
           type="text"
@@ -111,6 +141,16 @@ export class CalendarSettings
     });
   };
 
+  moveSource = (from: number, to: number) => {
+    this.setState(state => {
+      if (to < 0 || to >= state.sources.length) return null;
+      const newSources = [...state.sources];
+      const [moved] = newSources.splice(from, 1);
+      newSources.splice(to, 0, moved);
+      return { sources: newSources, dirty: true };
+    });
+  };
+
   render() {
     return (
       <div className="u-w-full">
@@ -136,6 +176,10 @@ export class CalendarSettings
                 dirty: true
               }))
             }
+            moveUp={() => this.moveSource(idx, idx - 1)}
+            moveDown={() => this.moveSource(idx, idx + 1)}
+            canMoveUp={idx > 0}
+            canMoveDown={idx < this.state.sources.length - 1}
           />
         ))}
         <div className="setting-item-control">
@@ -166,6 +210,10 @@ interface ProviderAwareCalendarSettingsRowProps {
   onColorChange: (s: string) => void;
   onNameChange: (s: string) => void;
   deleteCalendar: () => void;
+  moveUp: () => void;
+  moveDown: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   plugin: FullCalendarPlugin;
 }
 
@@ -174,6 +222,10 @@ export const ProviderAwareCalendarSettingRow = ({
   onColorChange,
   onNameChange,
   deleteCalendar,
+  moveUp,
+  moveDown,
+  canMoveUp,
+  canMoveDown,
   plugin: _plugin
 }: ProviderAwareCalendarSettingsRowProps) => {
   const registry = PluginState.getProviderRegistry();
@@ -183,7 +235,11 @@ export const ProviderAwareCalendarSettingRow = ({
     setting,
     onColorChange,
     onNameChange,
-    deleteCalendar
+    deleteCalendar,
+    moveUp,
+    moveDown,
+    canMoveUp,
+    canMoveDown
   };
 
   // All providers should implement the required method - get the provider-specific content

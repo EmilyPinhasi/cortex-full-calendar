@@ -381,6 +381,27 @@
     max-width: 15%;
 }
 
+.fc-setting-reorder-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 0.5rem;
+}
+
+.fc-setting-reorder-btn {
+    padding: 0 0.4rem;
+    min-height: 0;
+    height: 1.2rem;
+    line-height: 1;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.fc-setting-reorder-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
 .fc-setting-color-input {
     max-width: 25%;
     min-width: 3rem;
