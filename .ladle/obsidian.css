@@ -1,0 +1,111 @@
+:root {
+  --background-primary: #ffffff;
+  --background-primary-alt: #f7f8fb;
+  --background-secondary: #f2f4f9;
+  --background-modifier-border: #d8dce8;
+  --background-modifier-cover: #eef2ff;
+  --background-modifier-box-shadow: #e5e8f0;
+  --background-modifier-success: #dff5e5;
+
+  --text-normal: #1d2433;
+  --text-muted: #5f6980;
+  --text-faint: #8a93a8;
+  --text-accent: #3d64f4;
+  --text-on-accent: #ffffff;
+  --text-error: #cd3f46;
+  --text-error-hover: #b9333a;
+  --text-highlight-bg: #fff2be;
+
+  --interactive-normal: #e7ecff;
+  --interactive-hover: #dae3ff;
+  --interactive-accent: #3d64f4;
+  --interactive-accent-hover: #3457d5;
+
+  --color-base-30: #c7cede;
+  --color-purple-rgb: 122, 92, 255;
+
+  --font-text-size: 16px;
+  --font-smaller: 14px;
+  --font-ui-small: 13px;
+  --font-ui-medium: 15px;
+
+  --size-4-1: 4px;
+  --size-4-3: 12px;
+
+  --radius-s: 4px;
+  --radius-m: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+  font-size: var(--font-text-size);
+  line-height: 1.5;
+  color: var(--text-normal);
+  background: var(--background-primary);
+}
+
+.body-styles {
+  width: 100%;
+  min-height: 100vh;
+  color: var(--text-normal);
+  background: var(--background-primary);
+}
+
+.theme-light {
+  color-scheme: light;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--interactive-hover);
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+a {
+  color: var(--text-accent);
+}
+
+.modal,
+.setting-item {
+  color: var(--text-normal);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--background-modifier-border);
+}

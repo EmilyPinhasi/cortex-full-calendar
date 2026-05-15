@@ -1,0 +1,412 @@
+import { PluginState } from '../../core/PluginState';
+import { rrulestr } from 'rrule';
+import { DateTime } from 'luxon';
+import { CachedMetadata, TFile, TFolder, normalizePath } from 'obsidian';
+import * as React from 'react';
+
+import { OFCEvent, EventLocation, validateEvent } from '../../types';
+import FullCalendarPlugin from '../../main';
+import { constructTitle } from '../../features/category/categoryParser';
+import { newFrontmatter, modifyFrontmatterString, replaceFrontmatter } from './frontmatter';
+import { CalendarProvider, CalendarProviderCapabilities, SyncKeyProvider } from '../Provider';
+import { EventHandle, FCReactComponent, ProviderConfigContext } from '../typesProvider';
+import { FullNoteProviderConfig } from './typesLocal';
+import { ObsidianInterface } from '../../ObsidianAdapter';
+import { FullNoteConfigComponent } from './FullNoteConfigComponent';
+
+export type EditableEventResponse = [OFCEvent, EventLocation | null];
+
+// Settings row component for Full Note Provider
+const FullNoteDirectorySetting: React.FC<{
+  source: Partial<import('../../types').CalendarInfo>;
+}> = ({ source }) => {
+  // Handle both flat and nested config structures for directory
+  const getDirectory = (): string => {
+    const flat = (source as { directory?: unknown }).directory;
+    const nested = (source as { config?: { directory?: unknown } }).config?.directory;
+    return typeof flat === 'string' ? flat : typeof nested === 'string' ? nested : '';
+  };
+
+  return React.createElement(
+    'div',
+    { className: 'setting-item-control' },
+    React.createElement('input', {
+      disabled: true,
+      type: 'text',
+      value: getDirectory(),
+      className: 'fc-setting-input'
+    })
+  );
+};
+
+// Helper Functions (ported from FullNoteCalendar.ts)
+// =================================================================================================
+
+function sanitizeTitleForFilename(title: string): string {
+  return title
+    .replace(/[\\/:"*?<>|]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+interface TitleSettingsLike {
+  enableAdvancedCategorization?: boolean;
+}
+const basenameFromEvent = (event: OFCEvent, settings: TitleSettingsLike): string => {
+  const fullTitle = settings.enableAdvancedCategorization
+    ? constructTitle(event.category, event.subCategory, event.title)
+    : event.title;
+  const sanitizedTitle = sanitizeTitleForFilename(fullTitle);
+  switch (event.type) {
+    case undefined:
+    case 'single':
+      return `${event.date} ${sanitizedTitle}`;
+    case 'recurring': {
+      if (event.daysOfWeek && event.daysOfWeek.length > 0) {
+        return `(Every ${event.daysOfWeek.join(',')}) ${sanitizedTitle}`;
+      }
+      if (event.month && event.dayOfMonth) {
+        const monthName = DateTime.fromObject({ month: event.month }).toFormat('MMM');
+        return `(Every year on ${monthName} ${event.dayOfMonth}) ${sanitizedTitle}`;
+      }
+      if (event.dayOfMonth) {
+        return `(Every month on the ${event.dayOfMonth}) ${sanitizedTitle}`;
+      }
+      return `(Recurring) ${sanitizedTitle}`;
+    }
+    case 'rrule':
+      return `(${rrulestr(event.rrule).toText()}) ${sanitizedTitle}`;
+  }
+};
+
+const filenameForEvent = (event: OFCEvent, settings: TitleSettingsLike) =>
+  `${basenameFromEvent(event, settings)}.md`;
+
+const areFieldValuesEqual = (a: unknown, b: unknown): boolean => {
+  if (a === b) {
+    return true;
+  }
+
+  if (a === null || b === null || a === undefined || b === undefined) {
+    return false;
+  }
+
+  if (typeof a === 'object' && typeof b === 'object') {
+    try {
+      return JSON.stringify(a) === JSON.stringify(b);
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+};
+
+const getChangedFrontmatterFields = (
+  oldEventData: OFCEvent,
+  newEventData: OFCEvent
+): Partial<OFCEvent> => {
+  const changed: Record<string, unknown> = {};
+  const keys = new Set<keyof OFCEvent>([
+    ...(Object.keys(oldEventData) as (keyof OFCEvent)[]),
+    ...(Object.keys(newEventData) as (keyof OFCEvent)[])
+  ]);
+
+  keys.forEach(key => {
+    if (key === 'uid') {
+      return;
+    }
+
+    const oldValue = oldEventData[key];
+    const newValue = newEventData[key];
+    if (!areFieldValuesEqual(oldValue, newValue)) {
+      changed[key as string] = newValue;
+    }
+  });
+
+  return changed;
+};
+
+const SUFFIX_PATTERN = '-_-_-';
+
+const sleep = (ms: number): Promise<void> => new Promise(resolve => window.setTimeout(resolve, ms));
+const METADATA_WAIT_TIMEOUT_MS = 1500;
+
+const waitForFileAtPath = async (
+  app: ObsidianInterface,
+  path: string,
+  attempts = 20,
+  delayMs = 25
+): Promise<TFile | null> => {
+  for (let i = 0; i < attempts; i++) {
+    const file = app.getFileByPath(path);
+    if (file && file.path === path) {
+      return file;
+    }
+    await sleep(delayMs);
+  }
+  return null;
+};
+
+const waitForMetadataWithTimeout = async (
+  app: ObsidianInterface,
+  file: TFile,
+  timeoutMs = METADATA_WAIT_TIMEOUT_MS
+): Promise<CachedMetadata | null> => {
+  const existing = app.getMetadata(file);
+  if (existing) {
+    return existing;
+  }
+
+  try {
+    return await Promise.race([
+      app.waitForMetadata(file),
+      new Promise<null>(resolve => window.setTimeout(() => resolve(null), timeoutMs))
+    ]);
+  } catch (error) {
+    console.warn(
+      `Full Calendar: Failed while waiting for metadata for local note file "${file.path}".`,
+      error
+    );
+    return null;
+  }
+};
+
+type FullNoteConfigProps = {
+  plugin: FullCalendarPlugin;
+  config: Partial<FullNoteProviderConfig>;
+  onConfigChange: (newConfig: Partial<FullNoteProviderConfig>) => void;
+  context: ProviderConfigContext;
+  onSave: (finalConfig: FullNoteProviderConfig | FullNoteProviderConfig[]) => void;
+  onClose: () => void;
+};
+
+const FullNoteConfigWrapper: React.FC<FullNoteConfigProps> = props => {
+  const { onSave, ...rest } = props;
+  const handleSave = (finalConfig: FullNoteProviderConfig) => onSave(finalConfig);
+
+  return React.createElement(FullNoteConfigComponent, {
+    ...rest,
+    onSave: handleSave
+  });
+};
+
+/**
+ * Finds an available file path in the vault. If the desired path already exists,
+ * it appends a suffix (e.g., "-_-_1") until an unused path is found.
+ * @param app An ObsidianInterface for interacting with the vault.
+ * @param directory The directory to create the file in.
+ * @param baseFilename The desired filename, without extension or suffix.
+ * @returns A promise that resolves to the first available, unique file path.
+ */
+function findUniquePath(app: ObsidianInterface, directory: string, baseFilename: string): string {
+  let path = normalizePath(`${directory}/${baseFilename}.md`);
+  if (!app.getAbstractFileByPath(path)) {
+    return path;
+  }
+
+  let i = 1;
+  while (true) {
+    const suffix = `${SUFFIX_PATTERN}${i}`;
+    path = normalizePath(`${directory}/${baseFilename}${suffix}.md`);
+    if (!app.getAbstractFileByPath(path)) {
+      return path;
+    }
+    i++;
+  }
+}
+
+// Provider Implementation
+// =================================================================================================
+
+export class FullNoteProvider implements CalendarProvider<FullNoteProviderConfig>, SyncKeyProvider {
+  // Static metadata for registry
+  static readonly type = 'local';
+  static readonly displayName = 'Local Notes';
+
+  static getConfigurationComponent(): FCReactComponent<FullNoteConfigProps> {
+    return FullNoteConfigWrapper;
+  }
+
+  private app: ObsidianInterface;
+  private plugin: FullCalendarPlugin;
+  private source: FullNoteProviderConfig;
+
+  readonly type = 'local';
+  readonly displayName = 'Local Notes';
+  readonly isRemote = false;
+  readonly loadPriority = 10;
+
+  constructor(source: FullNoteProviderConfig, plugin: FullCalendarPlugin, app?: ObsidianInterface) {
+    if (!app) {
+      throw new Error('FullNoteProvider requires an Obsidian app interface.');
+    }
+    this.app = app;
+    this.plugin = plugin;
+    this.source = source;
+  }
+
+  getCapabilities(): CalendarProviderCapabilities {
+    return { canCreate: true, canEdit: true, canDelete: true };
+  }
+
+  getEventHandle(event: OFCEvent): EventHandle | null {
+    // Prioritize the UID if it exists. This is the new, robust path.
+    if (event.uid) {
+      return { persistentId: event.uid };
+    }
+
+    // Fallback for legacy events or events created in-memory that haven't been saved yet.
+    const filename = filenameForEvent(event, PluginState.getSettings());
+    const path = normalizePath(`${this.source.directory}/${filename}`);
+    return { persistentId: path };
+  }
+
+  computeSyncKey(event: OFCEvent): string {
+    if (event.uid) return event.uid;
+    const filename = filenameForEvent(event, PluginState.getSettings());
+    return normalizePath(`${this.source.directory}/${filename}`);
+  }
+
+  public isFileRelevant(file: TFile): boolean {
+    const directory = this.source.directory;
+    return !!directory && file.path.startsWith(`${directory}/`);
+  }
+
+  public async getEventsInFile(file: TFile): Promise<EditableEventResponse[]> {
+    const metadata = await waitForMetadataWithTimeout(this.app, file);
+    if (!metadata?.frontmatter) {
+      return [];
+    }
+
+    const rawEventData = {
+      ...metadata.frontmatter,
+      title: (metadata.frontmatter as { title?: string }).title || file.basename
+    } as Record<string, unknown>;
+
+    const event = validateEvent(rawEventData);
+    if (!event) {
+      return [];
+    }
+
+    // Populate UID from the file path.
+    event.uid = file.path;
+
+    // The raw event is returned as-is. The EventEnhancer will handle timezone conversion.
+    return [[event, { file, lineNumber: undefined }]];
+  }
+
+  async getEvents(_range?: { start: Date; end: Date }): Promise<EditableEventResponse[]> {
+    const eventFolder = this.app.getAbstractFileByPath(this.source.directory);
+    if (!eventFolder || !(eventFolder instanceof TFolder)) {
+      throw new Error(`${this.source.directory} is not a valid directory.`);
+    }
+
+    const events: EditableEventResponse[] = [];
+    for (const file of eventFolder.children) {
+      if (file instanceof TFile) {
+        const results = await this.getEventsInFile(file);
+        events.push(...results);
+      }
+    }
+    return events;
+  }
+
+  async createEvent(event: OFCEvent): Promise<[OFCEvent, EventLocation]> {
+    const baseFilename = basenameFromEvent(event, PluginState.getSettings());
+    const path = findUniquePath(this.app, this.source.directory, baseFilename);
+
+    // The frontmatter is generated from the clean `event` object, so the title remains unsuffixed.
+    const newPage = replaceFrontmatter('', newFrontmatter(event));
+    const file = await this.app.create(path, newPage);
+
+    // The authoritative event object returned to the cache must contain the
+    // unique path as its UID for future updates and deletions.
+    const finalEvent = { ...event, uid: file.path };
+    return [finalEvent, { file, lineNumber: undefined }];
+  }
+
+  async updateEvent(
+    handle: EventHandle,
+    oldEventData: OFCEvent,
+    newEventData: OFCEvent
+  ): Promise<EventLocation | null> {
+    const oldPath = handle.persistentId;
+    const originalFile = this.app.getFileByPath(oldPath);
+    if (!originalFile) {
+      throw new Error(`File ${oldPath} not found.`);
+    }
+
+    // Determine if the event's core identifiers (which make up the filename) have changed.
+    const oldBaseFilename = basenameFromEvent(oldEventData, PluginState.getSettings());
+    const newBaseFilename = basenameFromEvent(newEventData, PluginState.getSettings());
+
+    let finalPath = oldPath;
+    let fileToRewrite = originalFile;
+
+    if (oldBaseFilename !== newBaseFilename) {
+      // It's a rename. We must find a new unique path for the new base name.
+      finalPath = findUniquePath(this.app, this.source.directory, newBaseFilename);
+
+      await this.app.rename(originalFile, finalPath);
+
+      const renamedFile = await waitForFileAtPath(this.app, finalPath);
+      if (!renamedFile) {
+        throw new Error(`File ${finalPath} not found after rename.`);
+      }
+      fileToRewrite = renamedFile;
+    }
+
+    const changedFields = getChangedFrontmatterFields(oldEventData, newEventData);
+
+    if (Object.keys(changedFields).length > 0) {
+      await this.app.rewrite(fileToRewrite, page => modifyFrontmatterString(page, changedFields));
+    }
+
+    // The location returned must have the final, potentially new, path.
+    return { file: { path: finalPath }, lineNumber: undefined };
+  }
+
+  async deleteEvent(handle: EventHandle): Promise<void> {
+    const path = handle.persistentId;
+    const file = this.app.getFileByPath(path);
+    if (!file) {
+      throw new Error(`File ${path} not found.`);
+    }
+    return this.app.delete(file);
+  }
+
+  createInstanceOverride(
+    masterEvent: OFCEvent,
+    _instanceDate: string,
+    newEventData: OFCEvent
+  ): Promise<[OFCEvent, EventLocation | null]> {
+    const masterLocalId = this.getEventHandle(masterEvent)?.persistentId;
+    if (!masterLocalId) {
+      throw new Error('Could not get persistent ID for master event.');
+    }
+
+    const masterFilename = masterLocalId.split('/').pop();
+    if (!masterFilename) {
+      throw new Error(`Could not extract filename from master event path: ${masterLocalId}`);
+    }
+
+    const overrideEventData: OFCEvent = {
+      ...newEventData,
+      recurringEventId: masterFilename
+    };
+
+    // Use the existing createEvent logic to handle file creation and timezone conversion
+    return this.createEvent(overrideEventData);
+  }
+
+  getConfigurationComponent(): FCReactComponent<FullNoteConfigProps> {
+    return FullNoteConfigWrapper;
+  }
+
+  getSettingsRowComponent(): FCReactComponent<{
+    source: Partial<import('../../types').CalendarInfo>;
+  }> {
+    return FullNoteDirectorySetting;
+  }
+}
