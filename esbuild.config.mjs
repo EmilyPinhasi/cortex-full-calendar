@@ -66,33 +66,21 @@ async function build() {
         name: 'rename-css-plugin',
         setup(build) {
           build.onEnd(() => {
-
-            const outputDir = "obsidian-dev-vault/.obsidian/plugins/full-calendar-remastered";
+            const outputDir = ".";
             const oldCssPath = path.join(outputDir, "main.css");
             const newCssPath = path.join(outputDir, "styles.css");
 
-            // Rename CSS file
             if (fs.existsSync(oldCssPath)) {
               fs.renameSync(oldCssPath, newCssPath);
               console.log(" | Renamed CSS to styles.css");
             } else {
               console.warn("⚠️ CSS file not found to rename");
             }
-
-            // Copy manifest.json
-            const manifestSrc = path.join(process.cwd(), "manifest.json");
-            const manifestDest = path.join(outputDir, "manifest.json");
-            try {
-              fs.copyFileSync(manifestSrc, manifestDest);
-              console.log(" | Copied manifest.json to dev vault");
-            } catch (err) {
-              console.warn("⚠️ Could not copy manifest.json:", err);
-            }
           });
         }
       }
     ],
-    outfile: "obsidian-dev-vault/.obsidian/plugins/full-calendar-remastered/main.js",
+    outfile: "main.js",
     metafile: true,
   });
 

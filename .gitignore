@@ -9,13 +9,9 @@
 node_modules
 coverage/
 
-# Don't include the compiled main.js file in the repo.
-# They should be uploaded to GitHub releases instead.
-main.js
-# # This is built as main.css and then moved as part of the
-# # release process.
-# styles.css
-# main.css
+# main.js / styles.css are committed at repo root so BRAT can install from the branch.
+# main.css is the esbuild intermediate before it's renamed to styles.css.
+main.css
 
 # Exclude sourcemaps
 *.map
