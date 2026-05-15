@@ -37,7 +37,10 @@ type GoogleConfigProps = {
   config: Partial<GoogleProviderConfig>;
   onConfigChange: (newConfig: Partial<GoogleProviderConfig>) => void;
   context: ProviderConfigContext;
-  onSave: (finalConfig: GoogleProviderConfig | GoogleProviderConfig[]) => void;
+  onSave: (
+    finalConfig: GoogleProviderConfig | GoogleProviderConfig[],
+    accountId?: string
+  ) => void;
   onClose: () => void;
 };
 
@@ -52,9 +55,9 @@ const createGoogleConfigWrapper = (
 
     const handleSave = (
       selectedConfigs: { id: string; name: string; color: string }[],
-      _accountId: string
+      accountId: string
     ) => {
-      forwardOnSave(selectedConfigs as unknown as GoogleProviderConfig[]);
+      forwardOnSave(selectedConfigs as unknown as GoogleProviderConfig[], accountId);
     };
 
     if (!plugin) {
