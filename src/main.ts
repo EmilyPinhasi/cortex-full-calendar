@@ -33,8 +33,8 @@ import { PublicAPI, InternalAPI } from './api/FullCalendarAPI';
 import { openNLPCommandModal, registerNLPCommand } from './features/nlp/registerNLPCommand';
 
 // Inline the view type constants to avoid loading the heavy view module at startup
-const FULL_CALENDAR_VIEW_TYPE = 'full-calendar-view';
-const FULL_CALENDAR_SIDEBAR_VIEW_TYPE = 'full-calendar-sidebar-view';
+const FULL_CALENDAR_VIEW_TYPE = 'cortex-full-calendar-view';
+const FULL_CALENDAR_SIDEBAR_VIEW_TYPE = 'cortex-full-calendar-sidebar-view';
 
 export default class FullCalendarPlugin extends Plugin {
   #activityWatchAutoSyncTimer: number | null = null;

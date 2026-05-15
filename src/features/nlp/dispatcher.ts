@@ -217,7 +217,7 @@ export async function dispatchNLPAction(action: NLPActionObject): Promise<void> 
     await new Promise(resolve => window.setTimeout(resolve, 150));
     try {
       const plugin = PluginState.getPlugin();
-      const leaf = plugin.app.workspace.getLeavesOfType('full-calendar-view')[0];
+      const leaf = plugin.app.workspace.getLeavesOfType('cortex-full-calendar-view')[0];
       if (leaf?.view && 'fullCalendarView' in (leaf.view as unknown as Record<string, unknown>)) {
         const fcView = (leaf.view as unknown as Record<string, unknown>)['fullCalendarView'] as
           | { gotoDate: (date: string) => void }

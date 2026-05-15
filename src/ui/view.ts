@@ -42,8 +42,8 @@ import { ViewUIHandler } from './calendar/ViewUIHandler';
 import { ViewEventInteractionHandler } from './calendar/ViewEventInteractionHandler';
 export { getCalendarColors } from './calendar/utils';
 
-export const FULL_CALENDAR_VIEW_TYPE = 'full-calendar-view';
-export const FULL_CALENDAR_SIDEBAR_VIEW_TYPE = 'full-calendar-sidebar-view';
+export const FULL_CALENDAR_VIEW_TYPE = 'cortex-full-calendar-view';
+export const FULL_CALENDAR_SIDEBAR_VIEW_TYPE = 'cortex-full-calendar-sidebar-view';
 
 function throttle<TArgs extends unknown[], TReturn>(
   func: (...args: TArgs) => TReturn,

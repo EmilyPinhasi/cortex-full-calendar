@@ -17,7 +17,7 @@ export type { OFCEvent } from './schema';
 export { validateEvent } from './schema';
 export type { CalendarInfo } from './calendar_settings';
 
-export const PLUGIN_SLUG = 'full-calendar-plugin';
+export const PLUGIN_SLUG = 'cortex-full-calendar-plugin';
 
 export class FCError {
   message: string;

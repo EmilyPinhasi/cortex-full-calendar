@@ -7,7 +7,7 @@ import FullCalendarPlugin from '../main';
 import 'flatpickr/dist/themes/dark.css';
 import './ui/styles/main_styles.css';
 
-export const ANALYSIS_VIEW_TYPE = 'full-calendar-analysis-view';
+export const ANALYSIS_VIEW_TYPE = 'cortex-full-calendar-analysis-view';
 
 export class AnalysisView extends ItemView {
   private controller: AnalysisController | null = null;
