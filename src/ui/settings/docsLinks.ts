@@ -28,7 +28,7 @@ export function createDocsLinksFragment(
   links: DocsLink[],
   prefix = t('global.learnMore')
 ): DocumentFragment {
-  const doc: Document = activeDocument;
+  const doc: Document = activeDocument ?? document;
   if (links.length === 0) {
     return doc.createDocumentFragment();
   }
@@ -46,7 +46,7 @@ export function createDocsLinksFragment(
 }
 
 export function createDescWithDocs(description: string, links: DocsLink[]): DocumentFragment {
-  const doc: Document = activeDocument;
+  const doc: Document = activeDocument ?? document;
   const fragment = doc.createDocumentFragment();
   fragment.append(createMarkdownLinksFragment(description));
   if (links.length > 0) {

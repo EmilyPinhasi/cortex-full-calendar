@@ -607,7 +607,7 @@ export class FullCalendarSettingTab extends PluginSettingTab {
     }
 
     const regex = new RegExp(`(${escapedTokens.join('|')})`, 'gi');
-    const doc: Document = activeDocument;
+    const doc: Document = activeDocument ?? document;
     const fragment = doc.createDocumentFragment();
     let lastIndex = 0;
 

@@ -48,6 +48,12 @@ Original strip plan was deferred so we could get a working build out. Now that r
 
 ---
 
+## `activeDocument` audit (medium priority — may hit at runtime)
+
+- [ ] Several files call `activeDocument.xxx` without fallback. When Obsidian's `activeDocument` is undefined (which happens in this user's environment, observed for the settings tab), these throw. Fixed in: `docsLinks.ts`, `linkTextFragments.ts`, `SettingsTab.tsx:610`, `ui/calendar/utils.ts`, `renderWhatsNew.ts`. Still raw: `ui/settings/sections/calendars/calendar.ts` (many spots, including `addEventListener`/`removeEventListener` pairs that need a captured-doc pattern, not a per-call fallback). Fix proactively if user hits a crash when opening the calendar view.
+
+---
+
 ## Coexistence with upstream (low priority — only if both plugins stay enabled)
 
 - [ ] **Rename workspace event names** so this fork and upstream FCR don't trigger each other's listeners when both run side-by-side. Events to rename: `full-calendar:settings-updated`, `full-calendar:sources-changed`, `full-calendar:view-config-changed`. Files: `src/main.ts` (multiple), `src/core/EventCache.ts:101-111`. Suggested prefix: `cortex-full-calendar:`. Not crash-causing, but causes redundant cache resets and weird state sync if both plugins are active.

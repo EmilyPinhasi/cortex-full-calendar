@@ -48,7 +48,7 @@ export function createLinksFragment(
   segments: LinkTextSegment[],
   options?: { betweenLinksText?: string }
 ): DocumentFragment {
-  const doc: Document = activeDocument;
+  const doc: Document = activeDocument ?? document;
   const fragment = doc.createDocumentFragment();
   const betweenLinksText = options?.betweenLinksText;
   let previousSegmentWasLink = false;

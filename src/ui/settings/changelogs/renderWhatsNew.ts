@@ -59,7 +59,7 @@ export function renderWhatsNew(containerEl: HTMLElement, onShowChangelog: () => 
       .setName(change.title)
       .setDesc(createMarkdownLinksFragment(change.description));
 
-    const iconEl = activeDocument.createSpan();
+    const iconEl = (activeDocument ?? document).createSpan();
     iconEl.className = `change-icon-settings change-type-${change.type}`;
     if (change.type === 'new') {
       iconEl.setText('+');
