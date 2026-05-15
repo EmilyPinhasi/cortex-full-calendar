@@ -623,7 +623,7 @@ export async function renderCalendar(
 
     editable: modifyEvent && true,
     // Keep drag mirror anchored to the viewport, not transformed Obsidian panes.
-    fixedMirrorParent: activeDocument.body,
+    fixedMirrorParent: (activeDocument ?? document).body,
     eventDrop: modifyEventCallback,
     eventResize: modifyEventCallback,
 
