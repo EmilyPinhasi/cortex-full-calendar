@@ -1,6 +1,6 @@
 {
     "name": "cortex-full-calendar",
-    "version": "0.1.8",
+    "version": "0.1.20",
     "description": "Personal customized fork of Full Calendar Remastered.",
     "main": "main.js",
     "scripts": {
