@@ -69,7 +69,7 @@ Original strip plan was deferred so we could get a working build out. Now that r
 
 - [ ] **Stop committing `main.js` + `styles.css` to the branch.** Releases are now the source of truth, so the committed copies are redundant and noisy in diffs. To clean up: `git rm --cached main.js styles.css`, add both back to `.gitignore`, commit. (Only do this *after* confirming releases work end-to-end and BRAT installs successfully — they're currently a fallback.)
 
-- [ ] **Restrict release workflow trigger** so README-only or `.md`-only pushes don't create new releases. In `.github/workflows/release.yml`, add a `paths:` filter to the `push` trigger covering `src/**`, `manifest.json`, `package.json`, `esbuild.config.mjs`, `styles.css`. Saves noisy release versions on docs edits.
+- [x] **Restrict release workflow trigger** so README-only or `.md`-only pushes don't create new releases. In `.github/workflows/release.yml`, add a `paths:` filter to the `push` trigger covering `src/**`, `manifest.json`, `package.json`, `esbuild.config.mjs`, `styles.css`. Saves noisy release versions on docs edits.
 
 - [ ] **Add a Release Notes generator.** Currently the workflow uses `--notes "Automated release from ${{ github.sha }}"` which is uninformative. Could be improved to auto-generate notes from the commit messages since the previous release.
 

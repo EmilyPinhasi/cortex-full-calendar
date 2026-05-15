@@ -3,6 +3,14 @@ name: Build and release
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'manifest.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'esbuild.config.mjs'
+      - 'styles.css'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
 
 permissions:
