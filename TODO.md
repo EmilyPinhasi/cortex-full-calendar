@@ -71,7 +71,7 @@ Original strip plan was deferred so we could get a working build out. Now that r
 
 - [x] **Restrict release workflow trigger** so README-only or `.md`-only pushes don't create new releases. In `.github/workflows/release.yml`, add a `paths:` filter to the `push` trigger covering `src/**`, `manifest.json`, `package.json`, `esbuild.config.mjs`, `styles.css`. Saves noisy release versions on docs edits.
 
-- [ ] **Add a Release Notes generator.** Currently the workflow uses `--notes "Automated release from ${{ github.sha }}"` which is uninformative. Could be improved to auto-generate notes from the commit messages since the previous release.
+- [x] **Add a Release Notes generator.** Currently the workflow uses `--notes "Automated release from ${{ github.sha }}"` which is uninformative. Could be improved to auto-generate notes from the commit messages since the previous release.
 
 ---
 

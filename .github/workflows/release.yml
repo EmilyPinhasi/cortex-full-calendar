@@ -70,6 +70,30 @@ jobs:
         run: |
           node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.json','utf8')); m.version='${{ steps.ver.outputs.version }}'; fs.writeFileSync('manifest.json', JSON.stringify(m, null, '\t')+'\n');"
 
+      - name: Generate release notes from commits
+        if: steps.check.outputs.exists == 'false'
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PREV_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || true)
+          {
+            echo 'notes<<RELEASE_NOTES_EOF'
+            if [ -n "$PREV_TAG" ] && git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
+              echo "## Changes since ${PREV_TAG}"
+              echo
+              git log --pretty=format:'- %s (%h)' "${PREV_TAG}..HEAD"
+            else
+              echo "## Changes"
+              echo
+              git log --pretty=format:'- %s (%h)' -n 20
+            fi
+            echo
+            echo
+            echo "Built from ${{ github.sha }}."
+            echo RELEASE_NOTES_EOF
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub release
         if: steps.check.outputs.exists == 'false'
         env:
@@ -77,5 +101,5 @@ jobs:
         run: |
           gh release create "${{ steps.ver.outputs.version }}" \
             --title "${{ steps.ver.outputs.version }}" \
-            --notes "Automated release from ${{ github.sha }}" \
+            --notes "${{ steps.notes.outputs.notes }}" \
             main.js manifest.json styles.css
