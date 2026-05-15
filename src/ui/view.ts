@@ -259,6 +259,10 @@ export class CalendarView extends ItemView implements ViewContext {
           analysis: {
             text: t('ui.view.buttons.analysis'),
             click: () => this.uiHandler.activateChronoAnalyser()
+          },
+          refresh: {
+            text: t('ui.view.buttons.refresh'),
+            click: () => this.uiHandler.refreshRemoteCalendars()
           }
         },
         eventClick: info => {

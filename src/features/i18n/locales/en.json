@@ -1244,6 +1244,7 @@
       },
       "buttons": {
         "analysis": "Analysis",
+        "refresh": "Refresh",
         "defaultView": "Default View"
       },
       "contextMenu": {

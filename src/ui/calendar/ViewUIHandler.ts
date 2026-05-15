@@ -87,4 +87,8 @@ export class ViewUIHandler {
       showNotice(t('ui.view.errors.chronoAnalyserFailed'));
     }
   }
+
+  public refreshRemoteCalendars(): void {
+    PluginState.getProviderRegistry().revalidateRemoteCalendars(true);
+  }
 }
