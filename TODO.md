@@ -17,9 +17,9 @@ Format: `- [ ]` = pending, `- [x]` = done. Group order is roughly priority; with
   - File: `src/ui/settings/sections/calendars/renderFooter.ts` (lines 21 and 28)
   - Replace with this fork's URL (`https://github.com/EmilyPinhasi/cortex-full-calendar/issues/new`) or remove the links entirely.
 
-- [ ] **Upstream GitHub URLs in NLP / i18n payload loaders.** These fetch language packs and NLP data from the upstream's GitHub. They still work (we're forked from there) but they tie us to upstream's hosting.
+- [x] **Upstream GitHub URLs in NLP / i18n payload loaders.** These fetch language packs and NLP data from the upstream's GitHub. They still work (we're forked from there) but they tie us to upstream's hosting.
   - Files: `src/features/nlp/loader.ts:49`, `src/features/i18n/i18n.ts:70`
-  - Decide: leave as-is (works), bundle the payloads locally, or update URLs to point at this fork once we host them.
+  - Decide: leave as-is (works), bundle the payloads locally, or update URLs to point at this fork once we host them. Resolved by pointing at this fork's `main` branch (payloads exist there since we forked from upstream).
 
 - [x] **`PLUGIN_SLUG = 'full-calendar-plugin'`** in `src/types/index.ts:20`. Used as the hover-link source id. Internal-only, low impact, but inconsistent with the fork name.
 
