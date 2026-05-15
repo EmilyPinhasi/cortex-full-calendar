@@ -21,7 +21,7 @@ Format: `- [ ]` = pending, `- [x]` = done. Group order is roughly priority; with
   - Files: `src/features/nlp/loader.ts:49`, `src/features/i18n/i18n.ts:70`
   - Decide: leave as-is (works), bundle the payloads locally, or update URLs to point at this fork once we host them.
 
-- [ ] **`PLUGIN_SLUG = 'full-calendar-plugin'`** in `src/types/index.ts:20`. Used as the hover-link source id. Internal-only, low impact, but inconsistent with the fork name.
+- [x] **`PLUGIN_SLUG = 'full-calendar-plugin'`** in `src/types/index.ts:20`. Used as the hover-link source id. Internal-only, low impact, but inconsistent with the fork name.
 
 ---
 
