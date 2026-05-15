@@ -32,6 +32,7 @@ import { openFileForEvent } from '../../utils/eventActions';
 import { t } from '../../features/i18n/i18n';
 import { parseYaml } from 'obsidian';
 import type { CustomPropertyDefinition } from './EditEvent';
+import type { CalendarInfo } from '../../types';
 
 function isCustomPropertyValue(value: unknown): value is string | number | boolean | null {
   return (
@@ -43,7 +44,7 @@ function isCustomPropertyValue(value: unknown): value is string | number | boole
 }
 
 function getCustomPropertyDefinitions(info: unknown): CustomPropertyDefinition[] {
-  const template =
+  const rawTemplate =
     typeof info === 'object' &&
     info !== null &&
     'customPropertyTemplate' in info &&
@@ -51,6 +52,7 @@ function getCustomPropertyDefinitions(info: unknown): CustomPropertyDefinition[]
       ? info.customPropertyTemplate
       : undefined;
 
+  const template = rawTemplate?.trim().replace(/^---\s*/, '').replace(/\s*---$/, '');
   if (!template?.trim()) return [];
   try {
     const parsed: unknown = parseYaml(template);
@@ -70,6 +72,13 @@ function getCustomPropertyDefinitions(info: unknown): CustomPropertyDefinition[]
   }
 }
 
+function getCurrentSource(sourceFromRegistry: CalendarInfo): CalendarInfo {
+  return (
+    PluginState.getSettings().calendarSources.find(source => source.id === sourceFromRegistry.id) ??
+    sourceFromRegistry
+  );
+}
+
 export function launchCreateModal(
   plugin: FullCalendarPlugin,
   partialEvent: Partial<OFCEvent>,
@@ -78,7 +87,8 @@ export function launchCreateModal(
   const calendars = PluginState.getProviderRegistry()
     .getAllSources()
     .filter(s => s.type !== 'FOR_TEST_ONLY')
-    .map(info => {
+    .map(registryInfo => {
+      const info = getCurrentSource(registryInfo);
       const instance = PluginState.getProviderRegistry().getInstance(info.id);
       if (!instance) return null;
       const capabilities = instance.getCapabilities();
@@ -87,7 +97,7 @@ export function launchCreateModal(
       return {
         id: info.id,
         type: info.type,
-        name: info.name,
+        name: info.name ?? info.id,
         customPropertyDefinitions: getCustomPropertyDefinitions(info)
       };
     })
@@ -155,7 +165,8 @@ export function launchEditModal(plugin: FullCalendarPlugin, eventId: string) {
   const calendars = PluginState.getProviderRegistry()
     .getAllSources()
     .filter(s => s.type !== 'FOR_TEST_ONLY')
-    .map(info => {
+    .map(registryInfo => {
+      const info = getCurrentSource(registryInfo);
       const instance = PluginState.getProviderRegistry().getInstance(info.id);
       if (!instance) return null;
       const capabilities = instance.getCapabilities();
@@ -164,7 +175,7 @@ export function launchEditModal(plugin: FullCalendarPlugin, eventId: string) {
       return {
         id: info.id,
         type: info.type,
-        name: info.name,
+        name: info.name ?? info.id,
         customPropertyDefinitions: getCustomPropertyDefinitions(info)
       };
     })
