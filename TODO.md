@@ -13,7 +13,7 @@ Format: `- [ ]` = pending, `- [x]` = done. Group order is roughly priority; with
   - Also remove: the "What's New" call site(s) in `src/ui/settings/SettingsTab.tsx` and any `WhatsNewModal` invocation in `src/main.ts`.
   - Check i18n keys for `whatsNew` / changelog strings in `src/features/i18n/locales/*.json` and prune unused ones.
 
-- [ ] **Fix "Report a bug" / "Discussions" links** in the settings UI. They currently point at the upstream's GitHub issue tracker — anyone clicking them would file a bug at YouFoundJK's repo instead of this fork.
+- [x] **Fix "Report a bug" / "Discussions" links** in the settings UI. They currently point at the upstream's GitHub issue tracker — anyone clicking them would file a bug at YouFoundJK's repo instead of this fork.
   - File: `src/ui/settings/sections/calendars/renderFooter.ts` (lines 21 and 28)
   - Replace with this fork's URL (`https://github.com/EmilyPinhasi/cortex-full-calendar/issues/new`) or remove the links entirely.
 
