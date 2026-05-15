@@ -1,7 +1,7 @@
 {
 	"id": "cortex-full-calendar",
 	"name": "Cortex Full Calendar",
-	"version": "0.1.0",
+	"version": "0.1.8",
 	"minAppVersion": "1.8.7",
 	"description": "Personal fork of Full Calendar (Remastered) by YouFoundJK, originally by Davis Haupt.",
 	"author": "Emily",

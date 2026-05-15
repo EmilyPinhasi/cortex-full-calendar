@@ -1,6 +1,6 @@
 {
     "name": "cortex-full-calendar",
-    "version": "0.1.0",
+    "version": "0.1.8",
     "description": "Personal customized fork of Full Calendar Remastered.",
     "main": "main.js",
     "scripts": {
@@ -8,7 +8,7 @@
         "dev:vault": "node esbuild.config.mjs",
         "build": "node esbuild.config.mjs production",
         "prod": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-        "version": "node version-bump.mjs && git add manifest.json versions.json",
+        "version": "node version-bump.mjs && git add manifest.json",
         "lint": "eslint \"src/**/*.{ts,tsx}\" \"test_helpers/**/*.{ts,tsx}\" \"__mocks__/**/*.ts\" && eslint -c eslint.css.config.mjs \"src/**/*.css\"",
         "lint:eslint": "eslint \"src/**/*.{ts,tsx}\" \"test_helpers/**/*.{ts,tsx}\" \"__mocks__/**/*.ts\" -o lint_report.txt --no-color && eslint -c eslint.css.config.mjs \"src/**/*.css\" --no-color",
         "lt-es": "eslint \"src/**/*.{ts,tsx}\" \"test_helpers/**/*.{ts,tsx}\" \"__mocks__/**/*.ts\" -o lint_report.txt --no-color && eslint -c eslint.css.config.mjs \"src/**/*.css\" --no-color && node tools/check-and-prune-i18n.mjs",

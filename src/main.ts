@@ -362,9 +362,6 @@ export default class FullCalendarPlugin extends Plugin {
       await super.saveData(PluginState.getSettings());
     }
 
-    // Check if we need to show the changelog
-    const { checkAndShowWhatsNew } = await import('./ui/settings/changelogs/renderWhatsNew');
-    checkAndShowWhatsNew(this);
   }
 
   /**
