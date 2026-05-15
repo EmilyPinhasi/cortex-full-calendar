@@ -26,7 +26,7 @@ const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'; // Renamed for c
 const PROXY_TOKEN_URL = 'https://gcal-proxy-server.vercel.app/api/google/token';
 
 const SCOPES =
-  'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events';
+  'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks';
 
 const MOBILE_REDIRECT_URI =
   'https://youfoundjk.github.io/plugin-full-calendar/google-auth-callback.html';

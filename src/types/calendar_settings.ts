@@ -39,6 +39,13 @@ const calendarOptionsSchema = z.discriminatedUnion('type', [
     googleAccountId: z.string().optional()
   }),
   z.object({
+    type: z.literal('googletasks'),
+    id: z.string(),
+    name: z.string(),
+    taskListId: z.string(),
+    googleAccountId: z.string().optional()
+  }),
+  z.object({
     type: z.literal('outlook'),
     id: z.string(),
     name: z.string(),
