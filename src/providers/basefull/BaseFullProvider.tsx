@@ -1,4 +1,4 @@
-import { TFile, getAllTags, normalizePath, parseYaml } from 'obsidian';
+import { TFile, normalizePath, parseYaml } from 'obsidian';
 import * as React from 'react';
 import { DateTime } from 'luxon';
 import { CalendarProvider, CalendarProviderCapabilities, SyncKeyProvider } from '../Provider';
@@ -9,6 +9,7 @@ import { ObsidianInterface } from '../../ObsidianAdapter';
 import { modifyFrontmatterString } from '../fullnote/frontmatter';
 import { BaseFullConfigComponent, BaseFullConfigComponentProps } from './BaseFullConfigComponent';
 import { buildNoteFromTemplate } from '../../utils/noteTemplate';
+import { BaseFile, BaseFilter, combineBaseFilters, evaluateBaseFilter } from '../bases/baseFilter';
 
 export interface BaseFullProviderConfig {
   type: 'basefull';
@@ -22,16 +23,6 @@ export interface BaseFullProviderConfig {
   color: string;
   name: string;
   newNoteTemplatePath?: string;
-}
-
-interface BaseFilter {
-  or?: (BaseFilter | string)[];
-  and?: (BaseFilter | string)[];
-  not?: (BaseFilter | string)[];
-}
-
-interface BaseFile {
-  filters?: BaseFilter;
 }
 
 const DEFAULT_DATE_PROPERTY = 'date';
@@ -164,41 +155,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   }
 
   private evaluateFilter(filter: BaseFilter | string, file: TFile): boolean {
-    if (typeof filter === 'string') {
-      return this.evaluateFilterString(filter, file);
-    }
-    if (filter.or) return filter.or.some(f => this.evaluateFilter(f, file));
-    if (filter.and) return filter.and.every(f => this.evaluateFilter(f, file));
-    if (filter.not) return !filter.not.some(f => this.evaluateFilter(f, file));
-    return true;
-  }
-
-  private evaluateFilterString(statement: string, file: TFile): boolean {
-    const cache = this.plugin.app.metadataCache.getFileCache(file);
-    const tags = getAllTags(cache || {}) || [];
-
-    if (statement.includes('file.hasTag')) {
-      const match = statement.match(/file\.hasTag\("([^"]+)"\)/);
-      if (match) {
-        const tag = match[1];
-        return tags.some(t => t === tag || t === `#${tag}`);
-      }
-    }
-
-    if (statement.includes('file.inFolder')) {
-      const match = statement.match(/file\.inFolder\("([^"]+)"\)/);
-      if (match) {
-        return file.path.startsWith(match[1]);
-      }
-    }
-
-    if (statement.includes('file.ext')) {
-      if (statement.includes('"md"')) {
-        return file.extension === 'md';
-      }
-    }
-
-    return true;
+    return evaluateBaseFilter(filter, file, this.plugin.app.metadataCache);
   }
 
   private async getBaseData(): Promise<BaseFile | null> {
@@ -224,10 +181,11 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     const baseData = await this.getBaseData();
     if (!baseData) return [];
 
+    const baseFilter = combineBaseFilters(baseData);
     return this.plugin.app.vault.getFiles().filter(file => {
       if (file.extension !== 'md') return false;
-      if (!baseData.filters) return true;
-      return this.evaluateFilter(baseData.filters, file);
+      if (!baseFilter) return true;
+      return this.evaluateFilter(baseFilter, file);
     });
   }
 
@@ -249,7 +207,8 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     if (!this.isFileRelevant(file)) return [];
     const baseData = await this.getBaseData();
     if (!baseData) return [];
-    if (baseData.filters && !this.evaluateFilter(baseData.filters, file)) return [];
+    const baseFilter = combineBaseFilters(baseData);
+    if (baseFilter && !this.evaluateFilter(baseFilter, file)) return [];
     const event = this.getEventFromFile(file);
     return event ? [event] : [];
   }

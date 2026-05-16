@@ -1,4 +1,4 @@
-import { TFile, parseYaml, getAllTags } from 'obsidian';
+import { TFile, parseYaml } from 'obsidian';
 import * as React from 'react';
 import { CalendarProvider, CalendarProviderCapabilities, SyncKeyProvider } from '../Provider';
 import { OFCEvent, EventLocation, CalendarInfo, validateEvent } from '../../types';
@@ -6,24 +6,19 @@ import { FCReactComponent, EventHandle } from '../typesProvider';
 import FullCalendarPlugin from '../../main';
 import { ObsidianInterface } from '../../ObsidianAdapter';
 import { BasesConfigComponent, BasesConfigComponentProps } from './BasesConfigComponent';
+import {
+  BaseFile,
+  BaseFilter,
+  combineBaseFilters,
+  evaluateBaseFilter,
+  evaluateBaseFilterString
+} from './baseFilter';
 
 export interface BasesProviderConfig {
   type: 'bases';
   basePath: string;
   color: string;
   name: string;
-}
-
-interface BaseFilter {
-  or?: (BaseFilter | string)[];
-  and?: (BaseFilter | string)[];
-  not?: (BaseFilter | string)[];
-}
-
-interface BaseFile {
-  filters?: BaseFilter;
-  views?: unknown[];
-  properties?: unknown;
 }
 
 export class BasesProvider implements CalendarProvider<BasesProviderConfig>, SyncKeyProvider {
@@ -62,54 +57,11 @@ export class BasesProvider implements CalendarProvider<BasesProviderConfig>, Syn
   // --- Filter Evaluation Logic ---
 
   evaluateFilter(filter: BaseFilter | string, file: TFile): boolean {
-    if (typeof filter === 'string') {
-      return this.evaluateFilterString(filter, file);
-    }
-
-    if (filter.or) {
-      return filter.or.some(f => this.evaluateFilter(f, file));
-    }
-    if (filter.and) {
-      return filter.and.every(f => this.evaluateFilter(f, file));
-    }
-    if (filter.not) {
-      return !filter.not.some(f => this.evaluateFilter(f, file));
-    }
-    return true; // Default to true if empty object
+    return evaluateBaseFilter(filter, file, this.plugin.app.metadataCache);
   }
 
   evaluateFilterString(statement: string, file: TFile): boolean {
-    // Very basic implementation of filter string evaluation
-    // Supports: file.hasTag("tag"), file.inFolder("folder"), file.ext == "md"
-
-    const cache = this.plugin.app.metadataCache.getFileCache(file);
-    const tags = getAllTags(cache || {}) || [];
-
-    if (statement.includes('file.hasTag')) {
-      const match = statement.match(/file\.hasTag\("([^"]+)"\)/);
-      if (match) {
-        const tag = match[1];
-        // Handle #tag format in cache vs tag format in filter
-        return tags.some(t => t === tag || t === `#${tag}`);
-      }
-    }
-
-    if (statement.includes('file.inFolder')) {
-      const match = statement.match(/file\.inFolder\("([^"]+)"\)/);
-      if (match) {
-        const folder = match[1];
-        return file.path.startsWith(folder);
-      }
-    }
-
-    if (statement.includes('file.ext')) {
-      // Simple check for markdown files
-      if (statement.includes('"md"')) {
-        return file.extension === 'md';
-      }
-    }
-
-    return true;
+    return evaluateBaseFilterString(statement, file, this.plugin.app.metadataCache);
   }
 
   // --- Event Extraction Logic ---
@@ -147,10 +99,11 @@ export class BasesProvider implements CalendarProvider<BasesProviderConfig>, Syn
         return [];
       }
 
+      const baseFilter = combineBaseFilters(baseData);
       const allFiles = this.plugin.app.vault.getFiles();
       const filteredFiles = allFiles.filter(file => {
-        if (!baseData.filters) return true; // No filters = all files
-        return this.evaluateFilter(baseData.filters, file);
+        if (!baseFilter) return true; // No filters = all files
+        return this.evaluateFilter(baseFilter, file);
       });
 
       for (const file of filteredFiles) {

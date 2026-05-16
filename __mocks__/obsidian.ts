@@ -88,6 +88,18 @@ export function normalizePath(path: string): string {
     return toForwardSlashes(path).replace(/\/+/g, "/");
 }
 
+export function getAllTags(cache: { tags?: { tag: string }[]; frontmatter?: Record<string, unknown> }): string[] {
+    const inlineTags = cache.tags?.map((tag) => tag.tag) || [];
+    const frontmatterTags = cache.frontmatter?.tags;
+    if (Array.isArray(frontmatterTags)) {
+        return [...inlineTags, ...frontmatterTags.map((tag) => String(tag))];
+    }
+    if (typeof frontmatterTags === "string") {
+        return [...inlineTags, frontmatterTags];
+    }
+    return inlineTags;
+}
+
 export async function requestUrl(_url: string): Promise<{ text: string }> {
     await Promise.resolve();
     return { text: "{}" };
