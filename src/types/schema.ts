@@ -177,8 +177,15 @@ export function parseEvent(obj: unknown): OFCEvent {
   if (typeof obj !== 'object' || obj === null) {
     throw new Error('value for parsing was not an object.');
   }
-  const hasTime = 'startTime' in obj && !!(obj as Record<string, unknown>).startTime;
-  const objectWithDefaults = { type: 'single', allDay: !hasTime, ...obj };
+  const rawObj = obj as Record<string, unknown>;
+  const hasTime = 'startTime' in rawObj && !!rawObj.startTime;
+  const isTaskAlias = rawObj.type === 'task';
+  const objectWithDefaults = {
+    type: 'single',
+    allDay: !hasTime,
+    ...rawObj,
+    ...(isTaskAlias ? { type: 'single', completed: rawObj.completed ?? false } : {})
+  };
   const result = {
     ...CommonSchema.parse(objectWithDefaults),
     ...TimeSchema.parse(objectWithDefaults),

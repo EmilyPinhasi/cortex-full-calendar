@@ -143,7 +143,8 @@ export function dateEndpointsToFrontmatter(
 export function toEventInput(
   id: string,
   event: OFCEvent,
-  settings: FullCalendarSettings
+  settings: FullCalendarSettings,
+  options: { defaultTask?: boolean } = {}
 ): EventInput | null {
   const baseEvent: EventInput = {
     id,
@@ -314,7 +315,7 @@ export function toEventInput(
     // 8  Misc. extended props
     baseEvent.extendedProps = {
       ...baseEvent.extendedProps,
-      isTask: !!event.isTask,
+      isTask: options.defaultTask || !!event.isTask,
       ...(event.allDay ? {} : { sourceTimezone: sourceZone })
     };
 
@@ -390,7 +391,7 @@ export function toEventInput(
 
     baseEvent.extendedProps = {
       ...baseEvent.extendedProps,
-      isTask: !!event.isTask,
+      isTask: options.defaultTask || !!event.isTask,
       ...(event.allDay ? {} : { sourceTimezone: sourceZone })
     };
     try {
@@ -463,7 +464,7 @@ export function toEventInput(
       baseEvent.end = end;
       baseEvent.extendedProps = {
         ...baseEvent.extendedProps,
-        isTask: event.completed !== undefined && event.completed !== null,
+        isTask: options.defaultTask || (event.completed !== undefined && event.completed !== null),
         taskCompleted: event.completed,
         sourceTimezone: sourceZone
       };
@@ -481,7 +482,7 @@ export function toEventInput(
       baseEvent.end = adjustedEndDate;
       baseEvent.extendedProps = {
         ...baseEvent.extendedProps,
-        isTask: event.completed !== undefined && event.completed !== null,
+        isTask: options.defaultTask || (event.completed !== undefined && event.completed !== null),
         taskCompleted: event.completed
       };
     }

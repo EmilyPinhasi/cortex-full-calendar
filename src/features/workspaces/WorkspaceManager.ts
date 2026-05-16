@@ -217,20 +217,24 @@ export class WorkspaceManager {
   public getFilteredEventSources(allSources: OFCEventSource[]): EventSourceInput[] {
     const filteredSources = this.filterCalendarSources(allSources);
 
-    const sources = filteredSources.map(({ events, editable, color, id }): EventSourceInput => {
-      const mainEvents = events
-        .map((e: CachedEvent) => toEventInput(e.id, e.event, this.settings))
-        .filter((e): e is EventInput => !!e);
+    const sources = filteredSources.map(
+      ({ events, editable, color, id, type }): EventSourceInput => {
+        const mainEvents = events
+          .map((e: CachedEvent) =>
+            toEventInput(e.id, e.event, this.settings, { defaultTask: type !== 'google' })
+          )
+          .filter((e): e is EventInput => !!e);
 
-      const filteredEvents = this.filterEventsByCategory(mainEvents);
+        const filteredEvents = this.filterEventsByCategory(mainEvents);
 
-      return {
-        id,
-        events: filteredEvents,
-        editable,
-        ...getCalendarColors(color)
-      };
-    });
+        return {
+          id,
+          events: filteredEvents,
+          editable,
+          ...getCalendarColors(color)
+        };
+      }
+    );
     return sources;
   }
 }

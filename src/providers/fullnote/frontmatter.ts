@@ -76,7 +76,13 @@ function stringifyYamlLine(k: string, v: PrintableAtom): string {
 
 export function newFrontmatter(fields: Record<string, unknown>): string {
   const newFields = { ...fields };
-  if (newFields.type === 'single') delete newFields.type;
+  if (newFields.type === 'single') {
+    if (newFields.completed !== undefined && newFields.completed !== null) {
+      newFields.type = 'task';
+    } else {
+      delete newFields.type;
+    }
+  }
   if (!newFields.allDay) delete newFields.allDay;
   delete newFields.uid;
 
@@ -90,6 +96,14 @@ export function modifyFrontmatterString(
   page: string,
   modifications: Record<string, unknown>
 ): string {
+  const normalizedModifications = { ...modifications };
+  if ('completed' in normalizedModifications && !('type' in normalizedModifications)) {
+    normalizedModifications.type =
+      normalizedModifications.completed === undefined || normalizedModifications.completed === null
+        ? null
+        : 'task';
+  }
+
   const frontmatter = extractFrontmatter(page);
   const sourceLines = frontmatter ? frontmatter.split('\n') : [];
 
@@ -131,7 +145,7 @@ export function modifyFrontmatterString(
     return null;
   };
 
-  for (const [key, rawValue] of Object.entries(modifications)) {
+  for (const [key, rawValue] of Object.entries(normalizedModifications)) {
     const value = rawValue as PrintableAtom | undefined;
     const range = findKeyBlockRange(key);
 

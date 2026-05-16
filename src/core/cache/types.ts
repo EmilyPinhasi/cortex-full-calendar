@@ -8,6 +8,7 @@ export type OFCEventSource = {
   editable: boolean;
   color: string;
   id: string;
+  type: string;
 };
 
 export type CachedEvent = Pick<StoredEvent, 'event' | 'id'>;

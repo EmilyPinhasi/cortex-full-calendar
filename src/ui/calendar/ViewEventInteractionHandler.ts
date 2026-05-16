@@ -92,18 +92,19 @@ export class ViewEventInteractionHandler {
   }
 
   private async createEventInCalendar(
-    calendarId: string,
+    calendar: CreateCalendarChoice,
     partialEvent: Partial<OFCEvent>
   ): Promise<string | null> {
     const event = validateEvent({
       title: 'Untitled event',
       type: 'single',
       allDay: true,
+      ...(calendar.type === 'google' ? {} : { completed: false }),
       ...partialEvent
     });
     if (!event) return null;
 
-    return PluginState.getCache().addEventAndReturnId(calendarId, event);
+    return PluginState.getCache().addEventAndReturnId(calendar.id, event);
   }
 
   private async handleCreateCalendarChoice(
@@ -114,7 +115,7 @@ export class ViewEventInteractionHandler {
   ): Promise<void> {
     try {
       if (!calendar.isRemote) {
-        const createdEventId = await this.createEventInCalendar(calendar.id, partialEvent);
+        const createdEventId = await this.createEventInCalendar(calendar, partialEvent);
         const details = createdEventId
           ? PluginState.getCache().store.getEventDetails(createdEventId)
           : null;

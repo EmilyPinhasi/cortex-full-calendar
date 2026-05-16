@@ -178,6 +178,25 @@ describe('schema parsing tests', () => {
         }
       `);
     });
+    it('task alias', () => {
+      expect(
+        parseEvent({
+          title: 'Test',
+          type: 'task',
+          date: '2021-01-01',
+          allDay: true
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "allDay": true,
+          "completed": false,
+          "date": "2021-01-01",
+          "endDate": null,
+          "title": "Test",
+          "type": "single",
+        }
+      `);
+    });
     it('to-do completed', () => {
       expect(
         parseEvent({

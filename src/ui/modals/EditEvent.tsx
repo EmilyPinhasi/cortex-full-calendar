@@ -154,13 +154,15 @@ export const EditEvent = ({
   const isRecurring = recurrenceType !== 'none';
   const [allDay, setAllDay] = useState(initialEvent?.allDay || false);
   const [calendarIndex, setCalendarIndex] = useState(defaultCalendarIndex);
+  const selectedCalendar = calendars[calendarIndex];
+  const shouldDefaultToTask = mode === 'create' && selectedCalendar?.type !== 'google';
   const [isTask, setIsTask] = useState(
     (initialEvent?.type === 'single' &&
       initialEvent.completed !== undefined &&
       initialEvent.completed !== null) ||
       (initialEvent?.type === 'recurring' && initialEvent.isTask) ||
       (initialEvent?.type === 'rrule' && initialEvent.isTask) ||
-      false
+      shouldDefaultToTask
   );
   const [complete, setComplete] = useState(
     initialEvent?.type === 'single' && initialEvent.completed
@@ -204,7 +206,6 @@ export const EditEvent = ({
     }
   }, [titleRef]);
 
-  const selectedCalendar = calendars[calendarIndex];
   const isDailyNoteCalendar = selectedCalendar.type === 'dailynote';
   const recurringTooltip = isDailyNoteCalendar
     ? t('modals.editEvent.tooltips.dailyNoteRecurring')
@@ -216,6 +217,13 @@ export const EditEvent = ({
       setRecurrenceType('none');
     }
   }, [isDailyNoteCalendar]);
+
+  useEffect(() => {
+    if (mode !== 'create') {
+      return;
+    }
+    setIsTask(selectedCalendar?.type !== 'google');
+  }, [mode, selectedCalendar?.type]);
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();

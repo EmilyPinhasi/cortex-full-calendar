@@ -228,7 +228,8 @@ export default class EventCache {
         editable,
         events: events.map(({ event, id }) => ({ event, id })),
         color: calendarInfo.color,
-        id: calId
+        id: calId,
+        type: calendarInfo.type
       });
     }
     return result;
@@ -437,9 +438,8 @@ export default class EventCache {
     import('../features/recur_events/RecurringEventManager').RecurringEventManager
   > {
     if (!this.recurringEventManager) {
-      const { RecurringEventManager } = await import(
-        '../features/recur_events/RecurringEventManager'
-      );
+      const { RecurringEventManager } =
+        await import('../features/recur_events/RecurringEventManager');
       this.recurringEventManager = new RecurringEventManager(this, this._plugin);
     }
     return this.recurringEventManager;
