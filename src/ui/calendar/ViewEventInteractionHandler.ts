@@ -11,9 +11,42 @@ import { t } from '../../features/i18n/i18n';
 import { dateEndpointsToFrontmatter, fromEventApi } from '../../core/interop';
 import { TasksBacklogView, TASKS_BACKLOG_VIEW_TYPE } from '../../providers/tasks/TasksBacklogView';
 import { ViewContext } from './ViewContext';
+import { validateEvent, type OFCEvent } from '../../types';
 
 export class ViewEventInteractionHandler {
   constructor(private ctx: ViewContext) {}
+
+  private getDefaultPageCalendarId(): string | null {
+    const sources = PluginState.getProviderRegistry().getAllSources();
+    const preferred = sources[PluginState.getSettings().defaultCalendar];
+    const isPageCalendar = (calendarId: string | undefined): calendarId is string => {
+      if (!calendarId) return false;
+      const source = PluginState.getProviderRegistry().getSource(calendarId);
+      const capabilities = PluginState.getProviderRegistry().getCapabilities(calendarId);
+      return !!capabilities?.canCreate && (source?.type === 'local' || source?.type === 'basefull');
+    };
+
+    if (isPageCalendar(preferred?.id)) {
+      return preferred.id;
+    }
+
+    return sources.find(source => isPageCalendar(source.id))?.id ?? null;
+  }
+
+  private async createPageEvent(partialEvent: Partial<OFCEvent>): Promise<string | null> {
+    const calendarId = this.getDefaultPageCalendarId();
+    if (!calendarId) return null;
+
+    const event = validateEvent({
+      title: 'Untitled event',
+      type: 'single',
+      allDay: true,
+      ...partialEvent
+    });
+    if (!event) return null;
+
+    return PluginState.getCache().addEventAndReturnId(calendarId, event);
+  }
 
   public async getRecurringTaskInstanceState(
     eventApi: EventApi
@@ -50,6 +83,19 @@ export class ViewEventInteractionHandler {
   public async handleEventClick(info: EventClickArg): Promise<void> {
     try {
       if (info.jsEvent.getModifierState('Control') || info.jsEvent.getModifierState('Meta')) {
+        const { hoverFileForEvent } = await import('../../utils/eventActions');
+        hoverFileForEvent(
+          PluginState.getCache(),
+          this.ctx.app,
+          info.event.id,
+          info.jsEvent,
+          info.el
+        );
+        return;
+      }
+
+      const details = PluginState.getCache().store.getEventDetails(info.event.id);
+      if (details?.location) {
         const { openFileForEvent } = await import('../../utils/eventActions');
         await openFileForEvent(PluginState.getCache(), this.ctx.app, info.event.id);
         return;
@@ -113,6 +159,13 @@ export class ViewEventInteractionHandler {
         PluginState.getSettings().clickToCreateEventFromMonthView ||
         viewType !== 'dayGridMonth'
       ) {
+        const createdEventId = await this.createPageEvent(partialEvent);
+        if (createdEventId) {
+          const { openFileForEvent } = await import('../../utils/eventActions');
+          await openFileForEvent(PluginState.getCache(), this.ctx.app, createdEventId);
+          return;
+        }
+
         const { launchCreateModal } = await import('../modals/event_modal');
         launchCreateModal(this.ctx.plugin, partialEvent);
       } else {

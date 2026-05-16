@@ -7,12 +7,13 @@ import * as React from 'react';
 import { OFCEvent, EventLocation, validateEvent } from '../../types';
 import FullCalendarPlugin from '../../main';
 import { constructTitle } from '../../features/category/categoryParser';
-import { newFrontmatter, modifyFrontmatterString, replaceFrontmatter } from './frontmatter';
+import { modifyFrontmatterString } from './frontmatter';
 import { CalendarProvider, CalendarProviderCapabilities, SyncKeyProvider } from '../Provider';
 import { EventHandle, FCReactComponent, ProviderConfigContext } from '../typesProvider';
 import { FullNoteProviderConfig } from './typesLocal';
 import { ObsidianInterface } from '../../ObsidianAdapter';
 import { FullNoteConfigComponent } from './FullNoteConfigComponent';
+import { buildNoteFromTemplate } from '../../utils/noteTemplate';
 
 export type EditableEventResponse = [OFCEvent, EventLocation | null];
 
@@ -316,8 +317,8 @@ export class FullNoteProvider implements CalendarProvider<FullNoteProviderConfig
     const baseFilename = basenameFromEvent(event, PluginState.getSettings());
     const path = findUniquePath(this.app, this.source.directory, baseFilename);
 
-    // The frontmatter is generated from the clean `event` object, so the title remains unsuffixed.
-    const newPage = replaceFrontmatter('', newFrontmatter(event));
+    // The event frontmatter overrides the template so Bases filters can pick it up immediately.
+    const newPage = await buildNoteFromTemplate(this.app, this.source.newNoteTemplatePath, event);
     const file = await this.app.create(path, newPage);
 
     // The authoritative event object returned to the cache must contain the

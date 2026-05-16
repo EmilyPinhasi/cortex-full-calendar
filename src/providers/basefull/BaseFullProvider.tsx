@@ -6,12 +6,9 @@ import { EventHandle, FCReactComponent } from '../typesProvider';
 import { CalendarInfo, EventLocation, OFCEvent, validateEvent } from '../../types';
 import FullCalendarPlugin from '../../main';
 import { ObsidianInterface } from '../../ObsidianAdapter';
-import {
-  modifyFrontmatterString,
-  newFrontmatter,
-  replaceFrontmatter
-} from '../fullnote/frontmatter';
+import { modifyFrontmatterString } from '../fullnote/frontmatter';
 import { BaseFullConfigComponent, BaseFullConfigComponentProps } from './BaseFullConfigComponent';
+import { buildNoteFromTemplate } from '../../utils/noteTemplate';
 
 export interface BaseFullProviderConfig {
   type: 'basefull';
@@ -24,6 +21,7 @@ export interface BaseFullProviderConfig {
   incompleteStatusValue?: string;
   color: string;
   name: string;
+  newNoteTemplatePath?: string;
 }
 
 interface BaseFilter {
@@ -337,7 +335,10 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     )}`;
     const path = findUniquePath(this.app, this.config.createDirectory, baseFilename);
     const frontmatter = this.mapEventFieldsToFrontmatter({ ...event });
-    const file = await this.app.create(path, replaceFrontmatter('', newFrontmatter(frontmatter)));
+    const file = await this.app.create(
+      path,
+      await buildNoteFromTemplate(this.app, this.config.newNoteTemplatePath, frontmatter)
+    );
     const finalEvent = { ...event, uid: file.path };
     return [finalEvent, { file, lineNumber: undefined }];
   }

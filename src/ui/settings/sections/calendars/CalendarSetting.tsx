@@ -26,6 +26,7 @@ interface CalendarSettingRowProps {
   setting: Partial<CalendarInfo>;
   onColorChange: (s: string) => void;
   onNameChange: (s: string) => void;
+  onTemplateChange: (s: string) => void;
   deleteCalendar: () => void;
   moveUp: () => void;
   moveDown: () => void;
@@ -39,6 +40,7 @@ const CalendarSettingRow = ({
   setting,
   onColorChange,
   onNameChange,
+  onTemplateChange,
   deleteCalendar,
   moveUp,
   moveDown,
@@ -81,6 +83,17 @@ const CalendarSettingRow = ({
         />
       </div>
       {children}
+      {setting.type === 'local' || setting.type === 'basefull' ? (
+        <div className="setting-item-control">
+          <input
+            type="text"
+            value={(setting as { newNoteTemplatePath?: string }).newNoteTemplatePath || ''}
+            className="fc-setting-input"
+            placeholder="Template path"
+            onChange={e => onTemplateChange(e.target.value)}
+          />
+        </div>
+      ) : null}
       <input
         type="color"
         value={setting.color}
@@ -160,6 +173,19 @@ export class CalendarSettings
             setting={s}
             plugin={this.props.plugin}
             onNameChange={(name: string) => this.updateSourceName(idx, name)}
+            onTemplateChange={(newNoteTemplatePath: string) =>
+              this.setState(state => ({
+                sources: [
+                  ...state.sources.slice(0, idx),
+                  {
+                    ...state.sources[idx],
+                    newNoteTemplatePath: newNoteTemplatePath.trim() || undefined
+                  },
+                  ...state.sources.slice(idx + 1)
+                ],
+                dirty: true
+              }))
+            }
             onColorChange={(color: string) =>
               this.setState(state => ({
                 sources: [
@@ -209,6 +235,7 @@ interface ProviderAwareCalendarSettingsRowProps {
   setting: Partial<CalendarInfo>;
   onColorChange: (s: string) => void;
   onNameChange: (s: string) => void;
+  onTemplateChange: (s: string) => void;
   deleteCalendar: () => void;
   moveUp: () => void;
   moveDown: () => void;
@@ -221,6 +248,7 @@ export const ProviderAwareCalendarSettingRow = ({
   setting,
   onColorChange,
   onNameChange,
+  onTemplateChange,
   deleteCalendar,
   moveUp,
   moveDown,
@@ -235,6 +263,7 @@ export const ProviderAwareCalendarSettingRow = ({
     setting,
     onColorChange,
     onNameChange,
+    onTemplateChange,
     deleteCalendar,
     moveUp,
     moveDown,

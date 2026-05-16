@@ -58,6 +58,14 @@ export class CacheMutationHandler {
     event: OFCEvent,
     options?: MilestoneRecordOptions
   ): Promise<boolean> {
+    return (await this.addEventAndReturnId(calendarId, event, options)) !== null;
+  }
+
+  async addEventAndReturnId(
+    calendarId: string,
+    event: OFCEvent,
+    options?: MilestoneRecordOptions
+  ): Promise<string | null> {
     if (!event.allDay && !event.timezone) {
       const displayTimezone =
         PluginState.getSettings().displayTimezone ||
@@ -67,17 +75,17 @@ export class CacheMutationHandler {
     const calendarInfo = PluginState.getProviderRegistry().getSource(calendarId);
     if (!calendarInfo) {
       showNotice(t('eventCache.calendarNotFound', { calendarId }));
-      return false;
+      return null;
     }
     const capabilities = PluginState.getProviderRegistry().getCapabilities(calendarId);
     if (!capabilities) {
       showNotice(t('eventCache.providerNotFound', { type: calendarInfo.type }));
-      return false;
+      return null;
     }
 
     if (!capabilities.canCreate) {
       showNotice(t('eventCache.readOnly'));
-      return false;
+      return null;
     }
 
     const optimisticId = this.ctx.generateId();
@@ -129,7 +137,7 @@ export class CacheMutationHandler {
           event: authoritativeEvent
         }
       });
-      return true;
+      return optimisticId;
     } catch (e) {
       if (e instanceof DelegatedProviderActionError) {
         PluginState.getProviderRegistry().removeMapping(optimisticId);
@@ -141,7 +149,7 @@ export class CacheMutationHandler {
           this.ctx.flushUpdateQueue([optimisticId], []);
         }
 
-        return true;
+        return optimisticId;
       }
 
       console.error(`Failed to create event with provider. Rolling back cache state.`, {
@@ -158,7 +166,7 @@ export class CacheMutationHandler {
       }
 
       showNotice(t('eventCache.createFailed'));
-      return false;
+      return null;
     }
   }
 

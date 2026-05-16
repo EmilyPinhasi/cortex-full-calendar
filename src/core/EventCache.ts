@@ -276,6 +276,14 @@ export default class EventCache {
     return this.mutationHandler.addEvent(calendarId, event, options);
   }
 
+  addEventAndReturnId(
+    calendarId: string,
+    event: OFCEvent,
+    options?: MilestoneRecordOptions
+  ): Promise<string | null> {
+    return this.mutationHandler.addEventAndReturnId(calendarId, event, options);
+  }
+
   deleteEvent(
     eventId: string,
     options?: MilestoneRecordOptions & { instanceDate?: string }

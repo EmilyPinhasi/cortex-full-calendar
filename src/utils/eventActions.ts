@@ -18,6 +18,7 @@ import { showNotice } from './showNotice';
 import EventCache from '../core/EventCache';
 import { MarkdownView, TFile, Vault, Workspace } from 'obsidian';
 import { t } from '../features/i18n/i18n';
+import { PLUGIN_SLUG } from '../types';
 
 /**
  * Open a file in a NEW PANE (new tab view) to a given event.
@@ -54,4 +55,27 @@ export async function openFileForEvent(
   if (lineNumber && leaf.view instanceof MarkdownView) {
     leaf.view.editor.setCursor({ line: lineNumber, ch: 0 });
   }
+}
+
+export function hoverFileForEvent(
+  cache: EventCache,
+  { workspace }: { workspace: Workspace },
+  id: string,
+  event: MouseEvent,
+  hoverParent: HTMLElement
+) {
+  const details = cache.store.getEventDetails(id);
+  if (!details?.location) {
+    showNotice(t('notices.cannotOpenRemote'));
+    return;
+  }
+
+  workspace.trigger('hover-link', {
+    event,
+    source: PLUGIN_SLUG,
+    hoverParent,
+    targetEl: event.target,
+    linktext: details.location.path,
+    sourcePath: details.location.path
+  });
 }

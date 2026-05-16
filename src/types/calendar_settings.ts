@@ -17,69 +17,95 @@ import { OFCEvent } from './schema';
 import { getNextColor } from '../ui/components/colors';
 import { t } from '../features/i18n/i18n';
 
+const calendarTemplateOptionsSchema = z.object({
+  newNoteTemplatePath: z.string().optional()
+});
+
 // New flattened schemas for each calendar type
 const calendarOptionsSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('local'), id: z.string(), name: z.string(), directory: z.string() }),
-  z.object({ type: z.literal('dailynote'), id: z.string(), name: z.string(), heading: z.string() }),
-  z.object({ type: z.literal('ical'), id: z.string(), name: z.string(), url: z.string().url() }),
-  z.object({
-    type: z.literal('caldav'),
-    id: z.string(),
-    name: z.string(),
-    url: z.string().url(),
-    homeUrl: z.string().url(),
-    username: z.string(),
-    password: z.string()
-  }),
-  z.object({
-    type: z.literal('google'),
-    id: z.string(),
-    name: z.string(),
-    calendarId: z.string(), // Google's own ID for the calendar
-    googleAccountId: z.string().optional()
-  }),
-  z.object({
-    type: z.literal('googletasks'),
-    id: z.string(),
-    name: z.string(),
-    taskListId: z.string(),
-    googleAccountId: z.string().optional()
-  }),
-  z.object({
-    type: z.literal('outlook'),
-    id: z.string(),
-    name: z.string(),
-    calendarId: z.string(),
-    microsoftAccountId: z.string().optional()
-  }),
-  z.object({
-    type: z.literal('tasks'),
-    id: z.string(),
-    name: z.string()
-  }),
-  z.object({
-    type: z.literal('tasknotes'),
-    id: z.string(),
-    name: z.string(),
-    dispatchMode: z.enum(['search', 'create']).optional()
-  }),
-  z.object({
-    type: z.literal('bases'),
-    id: z.string(),
-    name: z.string(),
-    basePath: z.string()
-  }),
-  z.object({
-    type: z.literal('basefull'),
-    id: z.string(),
-    name: z.string(),
-    basePath: z.string(),
-    createDirectory: z.string(),
-    dateProperty: z.string(),
-    statusProperty: z.string().optional(),
-    completeStatusValue: z.string().optional(),
-    incompleteStatusValue: z.string().optional()
-  })
+  z
+    .object({ type: z.literal('local'), id: z.string(), name: z.string(), directory: z.string() })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({ type: z.literal('dailynote'), id: z.string(), name: z.string(), heading: z.string() })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({ type: z.literal('ical'), id: z.string(), name: z.string(), url: z.string().url() })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('caldav'),
+      id: z.string(),
+      name: z.string(),
+      url: z.string().url(),
+      homeUrl: z.string().url(),
+      username: z.string(),
+      password: z.string()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('google'),
+      id: z.string(),
+      name: z.string(),
+      calendarId: z.string(), // Google's own ID for the calendar
+      googleAccountId: z.string().optional()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('googletasks'),
+      id: z.string(),
+      name: z.string(),
+      taskListId: z.string(),
+      googleAccountId: z.string().optional()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('outlook'),
+      id: z.string(),
+      name: z.string(),
+      calendarId: z.string(),
+      microsoftAccountId: z.string().optional()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('tasks'),
+      id: z.string(),
+      name: z.string()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('tasknotes'),
+      id: z.string(),
+      name: z.string(),
+      dispatchMode: z.enum(['search', 'create']).optional()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('bases'),
+      id: z.string(),
+      name: z.string(),
+      basePath: z.string()
+    })
+    .merge(calendarTemplateOptionsSchema),
+  z
+    .object({
+      type: z.literal('basefull'),
+      id: z.string(),
+      name: z.string(),
+      basePath: z.string(),
+      createDirectory: z.string(),
+      dateProperty: z.string(),
+      statusProperty: z.string().optional(),
+      completeStatusValue: z.string().optional(),
+      incompleteStatusValue: z.string().optional()
+    })
+    .merge(calendarTemplateOptionsSchema)
 ]);
 
 const colorValidator = z.object({ color: z.string() });
