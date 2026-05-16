@@ -22,12 +22,13 @@ interface CreateCalendarChoice {
 }
 
 class CreateCalendarSuggestModal extends SuggestModal<CreateCalendarChoice> {
-  private resolved = false;
-
   constructor(
     app: App,
     private readonly calendars: CreateCalendarChoice[],
-    private readonly resolveChoice: (choice: CreateCalendarChoice | null) => void
+    private readonly onChooseCalendar: (
+      choice: CreateCalendarChoice,
+      evt: MouseEvent | KeyboardEvent
+    ) => void
   ) {
     super(app);
     this.setPlaceholder(t('modals.editEvent.calendarPicker.placeholder'));
@@ -52,15 +53,8 @@ class CreateCalendarSuggestModal extends SuggestModal<CreateCalendarChoice> {
     });
   }
 
-  onChooseSuggestion(calendar: CreateCalendarChoice): void {
-    this.resolved = true;
-    this.resolveChoice(calendar);
-  }
-
-  onClose(): void {
-    if (!this.resolved) {
-      this.resolveChoice(null);
-    }
+  onChooseSuggestion(calendar: CreateCalendarChoice, evt: MouseEvent | KeyboardEvent): void {
+    this.onChooseCalendar(calendar, evt);
   }
 }
 
@@ -87,10 +81,14 @@ export class ViewEventInteractionHandler {
     return choices;
   }
 
-  private chooseCalendar(calendars: CreateCalendarChoice[]): Promise<CreateCalendarChoice | null> {
-    return new Promise(resolve => {
-      new CreateCalendarSuggestModal(this.ctx.app, calendars, resolve).open();
-    });
+  private openCalendarPicker(
+    calendars: CreateCalendarChoice[],
+    partialEvent: Partial<OFCEvent>,
+    fallbackEvent?: MouseEvent
+  ): void {
+    new CreateCalendarSuggestModal(this.ctx.app, calendars, (calendar, evt) => {
+      void this.handleCreateCalendarChoice(calendar, partialEvent, evt, fallbackEvent);
+    }).open();
   }
 
   private async createEventInCalendar(
@@ -106,6 +104,47 @@ export class ViewEventInteractionHandler {
     if (!event) return null;
 
     return PluginState.getCache().addEventAndReturnId(calendarId, event);
+  }
+
+  private async handleCreateCalendarChoice(
+    calendar: CreateCalendarChoice,
+    partialEvent: Partial<OFCEvent>,
+    pickerEvent: MouseEvent | KeyboardEvent,
+    fallbackEvent?: MouseEvent
+  ): Promise<void> {
+    try {
+      if (!calendar.isRemote) {
+        const createdEventId = await this.createEventInCalendar(calendar.id, partialEvent);
+        const details = createdEventId
+          ? PluginState.getCache().store.getEventDetails(createdEventId)
+          : null;
+        if (createdEventId && details?.location) {
+          const hoverEvent = pickerEvent instanceof MouseEvent ? pickerEvent : fallbackEvent;
+          if (hoverEvent) {
+            const { hoverFileForEvent } = await import('../../utils/eventActions');
+            hoverFileForEvent(
+              PluginState.getCache(),
+              this.ctx.app,
+              createdEventId,
+              hoverEvent,
+              this.ctx.containerEl
+            );
+          } else {
+            const { openFileForEvent } = await import('../../utils/eventActions');
+            await openFileForEvent(PluginState.getCache(), this.ctx.app, createdEventId);
+          }
+          return;
+        }
+      }
+
+      const { launchCreateModal } = await import('../modals/event_modal');
+      launchCreateModal(this.ctx.plugin, partialEvent, calendar.id);
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error(e);
+        showNotice(e.message);
+      }
+    }
   }
 
   public async getRecurringTaskInstanceState(
@@ -226,34 +265,7 @@ export class ViewEventInteractionHandler {
           return;
         }
 
-        const calendar = await this.chooseCalendar(calendars);
-        if (!calendar) return;
-
-        if (!calendar.isRemote) {
-          const createdEventId = await this.createEventInCalendar(calendar.id, partialEvent);
-          const details = createdEventId
-            ? PluginState.getCache().store.getEventDetails(createdEventId)
-            : null;
-          if (createdEventId && details?.location) {
-            if (jsEvent) {
-              const { hoverFileForEvent } = await import('../../utils/eventActions');
-              hoverFileForEvent(
-                PluginState.getCache(),
-                this.ctx.app,
-                createdEventId,
-                jsEvent,
-                this.ctx.containerEl
-              );
-            } else {
-              const { openFileForEvent } = await import('../../utils/eventActions');
-              await openFileForEvent(PluginState.getCache(), this.ctx.app, createdEventId);
-            }
-            return;
-          }
-        }
-
-        const { launchCreateModal } = await import('../modals/event_modal');
-        launchCreateModal(this.ctx.plugin, partialEvent, calendar.id);
+        this.openCalendarPicker(calendars, partialEvent, jsEvent);
       } else {
         this.ctx.fullCalendarView?.changeView('timeGridDay');
         this.ctx.fullCalendarView?.gotoDate(start);
