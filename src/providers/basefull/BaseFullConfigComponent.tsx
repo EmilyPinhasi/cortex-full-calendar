@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TFolder, parseYaml } from 'obsidian';
+import { TFolder } from 'obsidian';
 import { ProviderConfigContext } from '../typesProvider';
 import FullCalendarPlugin from '../../main';
 import { BaseFullProviderConfig } from './BaseFullProvider';
@@ -29,10 +29,6 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
   const [incompleteStatusValue, setIncompleteStatusValue] = React.useState(
     config.incompleteStatusValue || 'todo'
   );
-  const [customPropertyTemplate, setCustomPropertyTemplate] = React.useState(
-    config.customPropertyTemplate || ''
-  );
-  const [templateError, setTemplateError] = React.useState<string | null>(null);
   const [baseFiles, setBaseFiles] = React.useState<string[]>([]);
   const [directories, setDirectories] = React.useState<string[]>([]);
 
@@ -57,7 +53,6 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
       statusProperty,
       completeStatusValue,
       incompleteStatusValue,
-      customPropertyTemplate,
       ...next
     });
   };
@@ -65,19 +60,6 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!basePath || !createDirectory || !dateProperty) return;
-    if (customPropertyTemplate.trim()) {
-      try {
-        const parsed: unknown = parseYaml(customPropertyTemplate);
-        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-          setTemplateError('Template must be a YAML object.');
-          return;
-        }
-      } catch (error) {
-        setTemplateError(error instanceof Error ? error.message : 'Invalid YAML template.');
-        return;
-      }
-    }
-
     const name = basePath.split('/').pop()?.replace('.base', '') || 'Base Full';
     onSave({
       type: 'basefull',
@@ -87,7 +69,6 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
       statusProperty: statusProperty.trim() || undefined,
       completeStatusValue,
       incompleteStatusValue,
-      customPropertyTemplate: customPropertyTemplate.trim() || undefined,
       name: config.name || `${name} Full`,
       color: config.color || '#3788d8'
     });
@@ -221,31 +202,6 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
           </div>
         </>
       )}
-
-      <div className="setting-item">
-        <div className="setting-item-info">
-          <div className="setting-item-name">Additional properties template</div>
-          <div className="setting-item-description">
-            YAML keys listed here appear in the new/edit event popup and are saved as frontmatter.
-          </div>
-        </div>
-        <div className="setting-item-control u-display-block">
-          <textarea
-            value={customPropertyTemplate}
-            placeholder={'priority: medium\nproject:\nreviewed: false'}
-            rows={6}
-            onChange={e => {
-              const next = e.target.value;
-              setCustomPropertyTemplate(next);
-              setTemplateError(null);
-              emitConfig({ customPropertyTemplate: next || undefined });
-            }}
-          />
-          {templateError && (
-            <div className="setting-item-description mod-warning">{templateError}</div>
-          )}
-        </div>
-      </div>
 
       <div className="setting-item">
         <div className="setting-item-control">

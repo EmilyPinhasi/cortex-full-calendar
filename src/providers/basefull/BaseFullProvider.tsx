@@ -22,7 +22,6 @@ export interface BaseFullProviderConfig {
   statusProperty?: string;
   completeStatusValue?: string;
   incompleteStatusValue?: string;
-  customPropertyTemplate?: string;
   color: string;
   name: string;
 }
@@ -80,28 +79,6 @@ function toComparableString(value: unknown): string | null {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   return null;
-}
-
-function parseCustomPropertyTemplate(template: string | undefined): Record<string, unknown> {
-  if (!template?.trim()) return {};
-  try {
-    const parsed: unknown = parseYaml(template);
-    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-      return {};
-    }
-    return Object.fromEntries(
-      Object.entries(parsed as Record<string, unknown>).filter(([, value]) => {
-        return (
-          value === null ||
-          typeof value === 'string' ||
-          typeof value === 'number' ||
-          typeof value === 'boolean'
-        );
-      })
-    );
-  } catch {
-    return {};
-  }
 }
 
 function areFieldValuesEqual(a: unknown, b: unknown): boolean {
@@ -178,10 +155,6 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
 
   private get incompleteStatusValue(): string {
     return this.config.incompleteStatusValue || DEFAULT_INCOMPLETE_STATUS;
-  }
-
-  private get customPropertyDefaults(): Record<string, unknown> {
-    return parseCustomPropertyTemplate(this.config.customPropertyTemplate);
   }
 
   private isBasesEnabled(): boolean {
@@ -320,13 +293,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
       type: typeof metadata.type === 'string' ? metadata.type : 'single',
       allDay: typeof metadata.allDay === 'boolean' ? metadata.allDay : true,
       date,
-      completed,
-      customProperties: Object.fromEntries(
-        Object.keys(this.customPropertyDefaults).map(key => [
-          key,
-          metadata[key] ?? this.customPropertyDefaults[key]
-        ])
-      )
+      completed
     };
 
     const event = validateEvent(rawEvent);
@@ -346,16 +313,6 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
 
   private mapEventFieldsToFrontmatter(fields: Record<string, unknown>): Record<string, unknown> {
     const mapped = { ...fields };
-    const customProperties = mapped.customProperties;
-    if (
-      customProperties &&
-      typeof customProperties === 'object' &&
-      !Array.isArray(customProperties)
-    ) {
-      Object.assign(mapped, customProperties as Record<string, unknown>);
-    }
-    delete mapped.customProperties;
-
     if ('date' in mapped) {
       mapped[this.dateProperty] = mapped.date;
       if (this.dateProperty !== 'date') {
@@ -425,42 +382,16 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     return BaseFullConfigComponent;
   }
 
-  getSettingsRowComponent(): FCReactComponent<{
-    source: Partial<CalendarInfo>;
-    onSourceChange?: (source: Partial<CalendarInfo>) => void;
-  }> {
-    return ({ source, onSourceChange }) => {
+  getSettingsRowComponent(): FCReactComponent<{ source: Partial<CalendarInfo> }> {
+    return ({ source }) => {
       const base = source as Partial<BaseFullProviderConfig>;
-      const update = (next: Partial<BaseFullProviderConfig>) => {
-        onSourceChange?.({ ...base, ...next });
-      };
       return (
         <div className="setting-item-control">
-          <div className="u-display-block">
-            <div className="fc-setting-desc">{base.basePath}</div>
-            <input
-              type="text"
-              value={base.dateProperty || DEFAULT_DATE_PROPERTY}
-              aria-label="Date property"
-              onChange={event => update({ dateProperty: event.target.value })}
-            />
-            <input
-              type="text"
-              value={base.statusProperty || ''}
-              aria-label="Status property"
-              placeholder="status"
-              onChange={event => update({ statusProperty: event.target.value || undefined })}
-            />
-            <textarea
-              value={base.customPropertyTemplate || ''}
-              aria-label="Additional properties template"
-              placeholder={'priority: medium\nproject:\nreviewed: false'}
-              rows={3}
-              onChange={event =>
-                update({ customPropertyTemplate: event.target.value || undefined })
-              }
-            />
-          </div>
+          <span>{base.basePath}</span>
+          <span className="fc-setting-desc">
+            {base.dateProperty || DEFAULT_DATE_PROPERTY}
+            {base.statusProperty ? ` / ${base.statusProperty}` : ''}
+          </span>
         </div>
       );
     };

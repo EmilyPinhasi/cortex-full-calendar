@@ -13,7 +13,7 @@
 
 import { DateTime } from 'luxon';
 import * as React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CalendarInfo, OFCEvent } from '../../types';
 import { AutocompleteInput } from '../components/forms/AutocompleteInput';
 import { parseSubcategoryTitle } from '../../features/category/categoryParser';
@@ -78,7 +78,6 @@ interface EditEventProps {
     id: string;
     name: string;
     type: CalendarInfo['type'];
-    customPropertyDefinitions?: CustomPropertyDefinition[];
   }[];
   defaultCalendarIndex: number;
   initialEvent?: Partial<OFCEvent>;
@@ -90,17 +89,6 @@ interface EditEventProps {
   deleteEvent?: () => Promise<void>;
   onAttemptEditInherited?: () => void;
   mode: 'create' | 'edit';
-}
-
-export interface CustomPropertyDefinition {
-  name: string;
-  defaultValue: string | number | boolean | null;
-}
-
-function getCustomPropertyTextValue(value: unknown): string {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return '';
 }
 
 function getInitialRecurrenceType(event?: Partial<OFCEvent>): RecurrenceType {
@@ -218,18 +206,6 @@ export const EditEvent = ({
 
   const selectedCalendar = calendars[calendarIndex];
   const isDailyNoteCalendar = selectedCalendar.type === 'dailynote';
-  const customPropertyDefinitions = useMemo(
-    () => selectedCalendar.customPropertyDefinitions || [],
-    [selectedCalendar.customPropertyDefinitions]
-  );
-  const [customProperties, setCustomProperties] = useState<Record<string, unknown>>(() =>
-    Object.fromEntries(
-      customPropertyDefinitions.map(definition => [
-        definition.name,
-        initialEvent?.customProperties?.[definition.name] ?? definition.defaultValue ?? ''
-      ])
-    )
-  );
   const recurringTooltip = isDailyNoteCalendar
     ? t('modals.editEvent.tooltips.dailyNoteRecurring')
     : '';
@@ -240,20 +216,6 @@ export const EditEvent = ({
       setRecurrenceType('none');
     }
   }, [isDailyNoteCalendar]);
-
-  useEffect(() => {
-    setCustomProperties(current => {
-      const next: Record<string, unknown> = {};
-      for (const definition of customPropertyDefinitions) {
-        next[definition.name] =
-          current[definition.name] ??
-          initialEvent?.customProperties?.[definition.name] ??
-          definition.defaultValue ??
-          '';
-      }
-      return next;
-    });
-  }, [calendarIndex, customPropertyDefinitions, initialEvent?.customProperties]);
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -328,15 +290,6 @@ export const EditEvent = ({
       subCategory: parsedSubCategory,
 
       notify: notifyValue !== '' ? { value: Number(notifyValue) } : undefined,
-      customProperties:
-        customPropertyDefinitions.length > 0
-          ? Object.fromEntries(
-              customPropertyDefinitions.map(definition => [
-                definition.name,
-                customProperties[definition.name]
-              ])
-            )
-          : undefined,
       ...timeInfo,
       ...eventData
     } as OFCEvent;
@@ -555,48 +508,6 @@ export const EditEvent = ({
             )}
           </div>
         </div>
-
-        {customPropertyDefinitions.length > 0 && (
-          <>
-            <hr className="modal-hr" />
-            {customPropertyDefinitions.map(definition => {
-              const value = customProperties[definition.name] ?? '';
-              const setValue = (next: unknown) =>
-                setCustomProperties(current => ({ ...current, [definition.name]: next }));
-
-              return (
-                <div className="setting-item" key={definition.name}>
-                  <div className="setting-item-info">
-                    <div className="setting-item-name">{definition.name}</div>
-                  </div>
-                  <div className="setting-item-control">
-                    {typeof definition.defaultValue === 'boolean' ? (
-                      <input
-                        type="checkbox"
-                        checked={value === true}
-                        onChange={e => setValue(e.target.checked)}
-                      />
-                    ) : typeof definition.defaultValue === 'number' ? (
-                      <input
-                        type="number"
-                        value={typeof value === 'number' ? value : ''}
-                        onChange={e =>
-                          setValue(e.target.value === '' ? null : Number(e.target.value))
-                        }
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={getCustomPropertyTextValue(value)}
-                        onChange={e => setValue(e.target.value)}
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </>
-        )}
 
         {/* New "Repeats" section */}
         <div className="setting-item">
