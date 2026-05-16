@@ -268,8 +268,8 @@ export class CalendarView extends ItemView implements ViewContext {
         eventClick: info => {
           void this.interactionHandler.handleEventClick(info);
         },
-        select: (start, end, allDay, viewType) =>
-          this.interactionHandler.handleSelect(start, end, allDay, viewType),
+        select: (start, end, allDay, viewType, jsEvent) =>
+          this.interactionHandler.handleSelect(start, end, allDay, viewType, jsEvent),
         modifyEvent: (newEvent, oldEvent, newResource) =>
           this.interactionHandler.handleModifyEvent(newEvent, oldEvent, newResource),
         eventMouseEnter: info => {

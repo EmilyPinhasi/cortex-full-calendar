@@ -814,6 +814,11 @@
       "misc": {
         "unknownCalendar": "Unknown Calendar"
       },
+      "calendarPicker": {
+        "placeholder": "Choose a calendar",
+        "local": "Local calendar",
+        "remote": "Remote calendar"
+      },
       "fields": {
         "title": {
           "label": "Title",

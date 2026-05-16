@@ -52,7 +52,13 @@ interface ExtraRenderProps {
     };
   };
 
-  select?: (startDate: Date, endDate: Date, allDay: boolean, viewType: string) => Promise<void>;
+  select?: (
+    startDate: Date,
+    endDate: Date,
+    allDay: boolean,
+    viewType: string,
+    jsEvent?: MouseEvent
+  ) => Promise<void>;
   modifyEvent?: (event: EventApi, oldEvent: EventApi, newResource?: string) => Promise<boolean>;
   eventMouseEnter?: (info: EventHoveringArg) => void;
   firstDay?: number;
@@ -625,7 +631,13 @@ export async function renderCalendar(
       select &&
       ((info): void => {
         void (async () => {
-          await select(info.start, info.end, info.allDay, info.view.type);
+          await select(
+            info.start,
+            info.end,
+            info.allDay,
+            info.view.type,
+            info.jsEvent ?? undefined
+          );
           info.view.calendar.unselect();
         })();
       }),
