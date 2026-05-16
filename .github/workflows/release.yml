@@ -72,13 +72,11 @@ jobs:
 
       - name: Generate release notes from commits
         if: steps.check.outputs.exists == 'false'
-        id: notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PREV_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || true)
           {
-            echo 'notes<<RELEASE_NOTES_EOF'
             if [ -n "$PREV_TAG" ] && git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
               echo "## Changes since ${PREV_TAG}"
               echo
@@ -91,8 +89,7 @@ jobs:
             echo
             echo
             echo "Built from ${{ github.sha }}."
-            echo RELEASE_NOTES_EOF
-          } >> "$GITHUB_OUTPUT"
+          } > release-notes.md
 
       - name: Create GitHub release
         if: steps.check.outputs.exists == 'false'
@@ -101,5 +98,5 @@ jobs:
         run: |
           gh release create "${{ steps.ver.outputs.version }}" \
             --title "${{ steps.ver.outputs.version }}" \
-            --notes "${{ steps.notes.outputs.notes }}" \
+            --notes-file release-notes.md \
             main.js manifest.json styles.css
