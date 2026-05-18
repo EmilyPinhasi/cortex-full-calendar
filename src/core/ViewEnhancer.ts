@@ -4,9 +4,8 @@
  *
  * @description
  * This class acts as the single intermediary between the EventCache and the
- * CalendarView. It composes one or more "enhancement modules" (like the
- * WorkspaceManager) to apply all necessary data transformations and configuration
- * overrides before the data is rendered.
+ * CalendarView. It applies presentation filters and configuration before the
+ * data is rendered.
  *
  * This decouples complex business logic from the view, making the view a "dumb"
  * renderer and centralizing the transformation logic for consistency and testability.
@@ -15,18 +14,14 @@
  */
 
 import { FullCalendarSettings } from '../types/settings';
-import { WorkspaceManager } from '../features/workspaces/WorkspaceManager';
 import { OFCEventSource } from './EventCache';
 import { EventSourceInput } from '@fullcalendar/core';
-import { WorkspaceSettings } from '../types/settings';
 
 export class ViewEnhancer {
   private settings: FullCalendarSettings;
-  private workspaceManager: WorkspaceManager;
 
   constructor(settings: FullCalendarSettings) {
     this.settings = settings;
-    this.workspaceManager = new WorkspaceManager(settings);
   }
 
   /**
@@ -35,7 +30,6 @@ export class ViewEnhancer {
    */
   public updateSettings(newSettings: FullCalendarSettings): void {
     this.settings = newSettings;
-    this.workspaceManager.updateSettings(newSettings);
   }
 
   /**
@@ -50,13 +44,13 @@ export class ViewEnhancer {
     sources: EventSourceInput[];
     config: Partial<FullCalendarSettings>;
   } {
-    const sources = this.workspaceManager.getFilteredEventSources(allSources);
-    const config = this.workspaceManager.getCalendarConfig();
+    const sources = this.getFilteredSources(allSources);
+    const config = this.settings;
     return { sources, config };
   }
 
   /**
-   * A pass-through to the workspace manager to get only the filtered sources.
+   * Gets only the filtered sources.
    * This is used by UI components that need the raw, filtered OFCEventSource objects,
    * such as the timeline resource builder.
    *
@@ -64,14 +58,7 @@ export class ViewEnhancer {
    * @returns A filtered array of OFCEventSource objects.
    */
   public getFilteredSources(allSources: OFCEventSource[]): OFCEventSource[] {
-    return this.workspaceManager.filterCalendarSources(allSources);
-  }
-
-  /**
-   * Gets the active workspace object from the internal manager.
-   * @returns The active WorkspaceSettings object, or null if none is active.
-   */
-  public getActiveWorkspace(): WorkspaceSettings | null {
-    return this.workspaceManager.getActiveWorkspace();
+    const hidden = new Set((this.settings.hiddenCalendarIds ?? []).map(String));
+    return allSources.filter(source => !hidden.has(String(source.id)));
   }
 }

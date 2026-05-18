@@ -31,21 +31,8 @@ export class ViewTimelineHandler {
 
     const allCachedSources = PluginState.getCache().getAllEvents();
     const allSources = viewEnhancer.getFilteredSources(allCachedSources);
-    const workspace = viewEnhancer.getActiveWorkspace();
 
-    const isCategoryVisible = (name: string) => {
-      if (!workspace?.categoryFilter) return true;
-      const { mode, categories } = workspace.categoryFilter;
-      if (mode === 'show-only' && categories.length === 0) return true;
-      if (mode === 'show-only') return categories.includes(name);
-      return !categories.includes(name);
-    };
-
-    const filteredCategorySettings = workspace?.categoryFilter
-      ? categorySettings.filter(cat => isCategoryVisible(cat.name))
-      : categorySettings;
-
-    filteredCategorySettings.forEach((cat: { name: string; color: string }) => {
+    categorySettings.forEach((cat: { name: string; color: string }) => {
       resources.push({
         id: cat.name,
         title: cat.name,
@@ -59,7 +46,6 @@ export class ViewTimelineHandler {
       for (const cachedEvent of source.events) {
         const { category, subCategory } = cachedEvent.event;
         if (category) {
-          if (!isCategoryVisible(category)) continue;
           if (!categoryMap.has(category)) categoryMap.set(category, new Set());
           const sub = subCategory || '__NONE__';
           const subCategories = categoryMap.get(category);
@@ -71,7 +57,6 @@ export class ViewTimelineHandler {
     }
 
     for (const [category, subCategories] of categoryMap.entries()) {
-      if (!isCategoryVisible(category)) continue;
       if (!resources.find(r => r.id === category)) {
         resources.push({ id: category, title: category, extendedProps: { isParent: true } });
       }

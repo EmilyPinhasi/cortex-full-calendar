@@ -1,8 +1,4 @@
 import { CalendarInfo } from './calendar_settings';
-// Import lazily-referenced type for chrono analyser configuration.
-// Placed inside a type-only import to avoid pulling heavy modules at runtime here.
-
-import type { InsightsConfig } from '../chrono_analyser/ui/ui';
 
 export interface TriggerRule {
   id: string;
@@ -83,38 +79,6 @@ export interface BusinessHoursSettings {
   endTime: string; // Format: 'HH:mm'
 }
 
-export interface WorkspaceSettings {
-  id: string;
-  name: string;
-
-  // View Configuration
-  defaultView?: {
-    desktop?: string;
-    mobile?: string;
-  };
-  defaultDate?: string; // 'today' | 'start-of-month' | 'next-week' | ISO date string
-
-  // Source & Content Filtering
-  visibleCalendars?: string[]; // Calendar IDs to show (if empty, show all)
-  categoryFilter?: {
-    mode: 'show-only' | 'hide'; // Filter mode
-    categories: string[]; // List of categories to show/hide
-  };
-
-  // Appearance Overrides
-  businessHours?: BusinessHoursSettings; // Override global business hours setting
-  timelineExpanded?: boolean; // Timeline categories expanded by default
-
-  // New granular view configuration overrides
-  slotMinTime?: string; // Format: 'HH:mm' - earliest time to display
-  slotMaxTime?: string; // Format: 'HH:mm' - latest time to display
-  allDaySlot?: boolean; // Whether to show all-day slot in week/day time-grid views
-  timeGridDayHeaderFormat?: string; // Format for week/day column headers in time-grid views
-  weekends?: boolean; // Whether to display weekends
-  hiddenDays?: number[]; // Array of day numbers to hide (0=Sunday, 1=Monday, etc.)
-  dayMaxEvents?: number | boolean; // Max events per day in month view (true = no limit, false = default, number = limit)
-}
-
 export interface GoogleAccount {
   id: string; // A unique identifier for this account
   email: string; // The user's email for display purposes
@@ -144,7 +108,6 @@ export interface FullCalendarSettings {
   displayTimezone: string | null;
   lastSystemTimezone: string | null;
   enableAdvancedCategorization: boolean;
-  chrono_analyser_config: InsightsConfig | null;
   categorySettings: { name: string; color: string }[];
   useCustomGoogleClient: boolean;
   googleClientId: string;
@@ -159,8 +122,6 @@ export interface FullCalendarSettings {
   enableReminders: boolean;
   enableDefaultReminder: boolean;
   defaultReminderMinutes: number;
-  workspaces: WorkspaceSettings[];
-  activeWorkspace: string | null; // Workspace ID, null means default view
   hiddenCalendarIds?: string[]; // Calendar source IDs hidden via the on-page toggle menu
   showEventInStatusBar: boolean;
   highlightCurrentOrNextEvent: boolean;
@@ -195,7 +156,6 @@ export const DEFAULT_SETTINGS: FullCalendarSettings = {
   displayTimezone: null,
   lastSystemTimezone: null,
   enableAdvancedCategorization: false,
-  chrono_analyser_config: null,
   categorySettings: [],
   useCustomGoogleClient: false,
   googleClientId: '',
@@ -213,8 +173,6 @@ export const DEFAULT_SETTINGS: FullCalendarSettings = {
   },
   enableBackgroundEvents: true,
   enableReminders: true,
-  workspaces: [],
-  activeWorkspace: null,
   hiddenCalendarIds: [],
   showEventInStatusBar: false,
   highlightCurrentOrNextEvent: true,
@@ -257,25 +215,3 @@ export const DEFAULT_SETTINGS: FullCalendarSettings = {
   currentVersion: null
 };
 
-// Utility functions for workspace management
-export function generateWorkspaceId(): string {
-  return `workspace_${Math.random().toString(36).slice(2, 11)}`;
-}
-
-export function createDefaultWorkspace(name: string): WorkspaceSettings {
-  return {
-    id: generateWorkspaceId(),
-    name: name,
-    defaultView: undefined,
-    defaultDate: undefined,
-    visibleCalendars: undefined,
-    categoryFilter: undefined,
-    businessHours: undefined,
-    timelineExpanded: undefined
-  };
-}
-
-export function getActiveWorkspace(settings: FullCalendarSettings): WorkspaceSettings | null {
-  if (!settings.activeWorkspace) return null;
-  return settings.workspaces.find(w => w.id === settings.activeWorkspace) || null;
-}

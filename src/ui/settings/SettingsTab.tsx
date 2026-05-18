@@ -151,7 +151,7 @@ export function addCalendarButton(
           const basesPlugin =
             app.internalPlugins?.getPluginById('bases') || app.plugins?.getPlugin('bases');
           if (!basesPlugin) {
-            showNotice(t('modals.workspace.fields.notices.enableBases'));
+            showNotice('Please enable the Obsidian Bases plugin first.');
             return;
           }
         }
@@ -683,14 +683,10 @@ export class FullCalendarSettingTab extends PluginSettingTab {
         break;
       }
       case 'organization': {
-        const [{ renderWorkspaceSettings }, { renderCategorizationSettings }] = await Promise.all([
-          import('../../features/workspaces/ui/renderWorkspaces'),
+        const [{ renderCategorizationSettings }] = await Promise.all([
           import('../../features/category/ui/renderCategorization')
         ]);
 
-        renderWorkspaceSettings(containerEl, this.plugin, () => {
-          void this.display();
-        });
         renderCategorizationSettings(containerEl, this.plugin, () => {
           void this.display();
         });

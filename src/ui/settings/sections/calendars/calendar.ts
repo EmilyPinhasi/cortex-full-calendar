@@ -224,7 +224,7 @@ export async function renderCalendar(
         headerToolbar: {
           left: 'prev,today,next refresh search',
           center: 'title',
-          right: 'analysis more'
+          right: 'more'
         },
         footerToolbar: false
       };
@@ -237,9 +237,9 @@ export async function renderCalendar(
     return {
       mode: 'desktop',
       headerToolbar: {
-        left: 'workspace calendars prev,today,navigate,next refresh search',
+        left: 'calendars prev,today,navigate,next refresh search',
         center: 'title',
-        right: `analysis ${fullDesktopViewGroup}`
+        right: fullDesktopViewGroup
       },
       footerToolbar: false
     };
@@ -384,12 +384,6 @@ export async function renderCalendar(
     text: 'More ▾',
     click: (ev: MouseEvent) => {
       const menu = new Menu();
-
-      menu.addItem(item => {
-        item.setTitle('Workspace').onClick(() => {
-          void customButtons?.workspace?.click(ev);
-        });
-      });
 
       menu.addItem(item => {
         item.setTitle('Calendars').onClick(() => {

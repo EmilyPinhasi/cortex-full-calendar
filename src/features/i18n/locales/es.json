@@ -1,146 +1,9 @@
 {
-  "chrono": {
-    "ui": {
-      "title": "Configurar grupos de información",
-      "description": "Cree grupos para categorizar sus actividades. El motor utilizará estas reglas para generar información personalizada.",
-      "save": "Guardar configuración",
-      "cancel": "Cancelar",
-      "addGroup": "Añadir nuevo grupo de información",
-      "groupName": "Nombre del grupo",
-      "groupNamePlaceholder": "p. ej., Trabajo",
-      "deleteGroup": "Eliminar este grupo",
-      "persona": {
-        "name": "Analizar como Persona",
-        "desc": "Elija el modelo analítico para aplicar a este grupo.",
-        "productivity": "🎯 Productividad",
-        "wellness": "❤️ Bienestar y Rutina",
-        "none": "⚪ (Ignorar en el panel)"
-      },
-      "hierarchies": {
-        "name": "Jerarquías coincidentes",
-        "desc": "p. ej., Calendario de trabajo, Calendario personal",
-        "add": "Añadir jerarquía..."
-      },
-      "projects": {
-        "name": "Proyectos coincidentes",
-        "desc": "p. ej., Proyecto Phoenix, Informe Q4",
-        "add": "Añadir proyecto..."
-      },
-      "mutedProjects": {
-        "name": "Proyectos silenciados",
-        "desc": "Silenciar proyectos específicos (distingue mayúsculas/minúsculas, coincidencia exacta) para excluirlos de las comprobaciones de consistencia de hábitos.",
-        "add": "Añadir proyecto silenciado..."
-      },
-      "subprojectKeywords": {
-        "name": "Palabras clave de subproyectos coincidentes",
-        "desc": "Añada palabras clave que coincidan si se encuentran en cualquier parte de un subproyecto.",
-        "placeholder": "p. ej., diseño\ninvestigación\nreunión"
-      },
-      "mutedSubprojectKeywords": {
-        "name": "Palabras clave de subproyectos silenciados",
-        "desc": "Silenciar actividades por palabra clave. Si un subproyecto contiene alguna de estas palabras clave (no distingue mayúsculas/minúsculas), se excluirá de las comprobaciones de consistencia de hábitos.",
-        "placeholder": "p. ej., completado\narchivo\nviejo"
-      },
-      "unsavedChanges": {
-        "title": "Cambios sin guardar",
-        "message": "Tiene cambios sin guardar. ¿Le gustaría guardarlos antes de cerrar?",
-        "saveAndClose": "Guardar y cerrar",
-        "discard": "Descartar cambios"
-      },
-      "folderSelectPlaceholder": "Seleccione una carpeta con sus archivos de seguimiento de tiempo...",
-      "errors": {
-        "groupExists": "El nombre del grupo \"{{name}}\" ya existe."
-      }
-    },
-    "analyser": {
-      "header": "📊 ChronoAnalyser",
-      "subtitle": "Análisis interactivo de sus datos de seguimiento de tiempo",
-      "proTip": "Consejo pro",
-      "clickNextTip": "Haga clic para ver el siguiente consejo",
-      "insights": {
-        "title": "💡 Insights",
-        "generate": "Generar insights",
-        "configure": "Configurar insights",
-        "placeholder": "Haga clic en \"Generar insights\" para analizar sus datos."
-      },
-      "filters": {
-        "hierarchy": "📂 filtrar por jerarquía (fuente de calendario)",
-        "hierarchyPlaceholder": "Todas las jerarquías (escriba para filtrar...)",
-        "project": "📋 filtrar por proyecto",
-        "projectPlaceholder": "Todos los proyectos (escriba para filtrar...)",
-        "category": "🔍 filtrar por categoría (ej: palabra clave -excluir)",
-        "categoryPlaceholder": "Ej: tarea.* -review",
-        "dateRange": "📅 rango de fechas",
-        "dateRangePlaceholder": "Seleccionar rango (aaaa-mm-dd a aaaa-mm-dd)",
-        "today": "Hoy",
-        "yesterday": "Ayer",
-        "thisWeek": "Esta semana",
-        "thisMonth": "Este mes",
-        "clearDates": "🗑️ borrar fechas",
-        "clearDatesTooltip": "Borrar filtros de fecha"
-      },
-      "config": {
-        "metric": "📏 métrica",
-        "duration": "Duración (horas)",
-        "count": "Cantidad de eventos",
-        "analysisType": "🎯 tipo de análisis",
-        "pie": "Por categoría (pie)",
-        "sunburst": "Por categoría (sunburst)",
-        "timeSeries": "Tendencia temporal",
-        "activity": "Patrones de actividad",
-        "breakdownLevel": "📈 nivel de desglose",
-        "hierarchy": "Jerarquía",
-        "project": "Proyecto",
-        "subproject": "Subproyecto",
-        "projectsByHierarchy": "Proyectos por jerarquía",
-        "subprojectsByProject": "Subproyectos por proyecto",
-        "granularity": "🕒 granularidad",
-        "daily": "Diario",
-        "weekly": "Semanal",
-        "monthly": "Mensual",
-        "chartType": "📊 tipo de gráfico",
-        "overallTrend": "Tendencia general",
-        "stackedByCategory": "Apilado por categoría",
-        "stackBy": "📚 apilar por",
-        "analyzeBy": "📅 analizar por",
-        "dayOfWeek": "Día de la semana",
-        "hourOfDay": "Hora del día (inicio de tarea)",
-        "heatmap": "Mapa de calor (día vs hora)",
-        "tooltips": {
-          "categorywise": "Visualice cómo se distribuye el tiempo entre las diferentes categorías.",
-          "timeSeries": "Visualice cómo cambia el tiempo dedicado a lo largo de un período.",
-          "activity": "Identifique patrones sobre cuándo se realizan habitualmente las tareas.",
-          "dayOfWeek": "Muestra un gráfico de barras con el total de horas dedicadas cada día de la semana.",
-          "hourOfDay": "Muestra un gráfico de barras con el total de horas asociadas a tareas que comienzan en cada hora del día.",
-          "heatmap": "Muestra un mapa de calor donde las filas son los días de la semana y las columnas las horas del día."
-        }
-      },
-      "stats": {
-        "totalHours": "Horas totales (filtradas)",
-        "filesInFilter": "Archivos en el filtro",
-        "activeAnalysis": "Análisis activo"
-      },
-      "log": {
-        "title": "📋 registro de procesamiento y problemas",
-        "noIssues": "No se encontraron problemas."
-      },
-      "details": {
-        "title": "Detalles de la categoría",
-        "close": "Cerrar",
-        "project": "Proyecto",
-        "subproject": "Subproyecto (completo)",
-        "duration": "Duración (h)",
-        "date": "Fecha",
-        "filePath": "Ruta del archivo"
-      }
-    }
-  },
   "commands": {
     "newEvent": "Nuevo evento",
     "resetCache": "Restablecer caché de eventos",
     "revalidateRemote": "Revalidar calendarios remotos",
     "openCalendar": "Abrir calendario",
-    "openChronoAnalyser": "Abrir Crono Analizador (Solo escritorio)",
     "openSidebar": "Abrir en la barra lateral",
     "syncActivityWatch": "Sync ActivityWatch",
     "nlpQuickAdd": "FCR Command"
@@ -148,13 +11,6 @@
   "notices": {
     "settingsUpdated": "Full Calendar ha actualizado la configuración de tu calendario a un nuevo formato.",
     "cacheReset": "Full Calendar ha sido restablecido.",
-    "chronoAnalyserMobileDisabled": "La función Crono Analizador solo está disponible en la versión de escritorio de Obsidian.",
-    "chronoAnalyserInitializing": "Crono Analizador: Inicializando caché de eventos...",
-    "chronoAnalyserLoadFailed": "No se pudo cargar el Crono Analizador. Por favor revisa la consola.",
-    "chronoAnalyserConfigureFirst": "Por favor configura tus Grupos de Insight primero usando el icono ⚙️.",
-    "chronoAnalyserGeneratingInsights": "Generando insights (esto puede tardar un momento)...",
-    "chronoAnalyserInsightsFailed": "No se pudieron generar los insights. Revisa la consola de desarrollador para errores.",
-    "chronoAnalyserInsightsSaved": "¡Configuración de insights guardada!",
     "googleAuthFailed": "La autenticación de Google falló. Por favor intenta de nuevo.",
     "bulkUpdateError": "Error durante la actualización masiva. Revisa la consola para detalles.",
     "providerNotRegistered": "El proveedor {{providerType}} no está registrado.",
@@ -521,7 +377,9 @@
         "tasks": "Tareas de Obsidian",
         "bases": "Obsidian Bases",
         "tasknotes": "TaskNotes",
-        "outlook": "Outlook Calendar"
+        "outlook": "Outlook Calendar",
+        "googleTasks": "Google Tasks",
+        "basefull": "Base Full"
       },
       "fullNote": {
         "directory": {
@@ -627,35 +485,8 @@
       },
       "learnMoreLink": "here"
     },
-    "workspaces": {
-      "title": "Espacios de trabajo",
-      "description": "Crea y gestiona espacios de trabajo de calendario. Cada espacio puede tener su propia configuración de vista, calendarios visibles y filtros.",
-      "addNew": {
-        "label": "Agregar nuevo espacio de trabajo",
-        "description": "Crea un nuevo espacio de trabajo de calendario"
-      },
-      "buttons": {
-        "new": "Nuevo espacio de trabajo",
-        "edit": "Editar",
-        "duplicate": "Duplicar",
-        "activate": "Activar",
-        "active": "Activo",
-        "delete": "Eliminar"
-      },
-      "defaultName": "Nuevo espacio de trabajo",
-      "copyName": "{{name}} Copia"
-    },
     "quickStart": {
       "description": "Para comenzar, agrega una fuente de calendario usando el botón '+' en la sección 'Gestionar calendarios'."
-    },
-    "viewOptions": {
-      "day": "Día",
-      "week": "Semana",
-      "month": "Mes",
-      "list": "Lista",
-      "threeDays": "3 días",
-      "timelineWeek": "Semana en línea de tiempo",
-      "timelineDay": "Día en línea de tiempo"
     },
     "weekdays": {
       "sunday": "Domingo",
@@ -884,6 +715,11 @@
       "tooltips": {
         "recurringTaskCompletion": "La finalización de tareas recurrentes puede alternarse en instancias individuales en la vista de calendario.",
         "dailyNoteRecurring": "Los eventos recurrentes no son compatibles en Notas Diarias. Por favor usa un calendario de 'Nota completa'."
+      },
+      "calendarPicker": {
+        "placeholder": "Choose a calendar",
+        "local": "Local calendar",
+        "remote": "Remote calendar"
       }
     },
     "deleteRecurring": {
@@ -905,147 +741,6 @@
         "button": "Eliminar todo"
       },
       "cancel": "Cancelar"
-    },
-    "workspace": {
-      "title": {
-        "create": "Crear espacio de trabajo",
-        "edit": "Editar espacio de trabajo"
-      },
-      "sections": {
-        "general": "General",
-        "viewConfiguration": "Configuración de vista",
-        "calendarFilters": "Filtros de calendario",
-        "categoryFilters": "Filtros de categoría",
-        "appearanceOverrides": "Anulaciones de apariencia",
-        "viewClipping": "Recorte de vista y rango de tiempo"
-      },
-      "fields": {
-        "name": {
-          "label": "Nombre",
-          "description": "Un nombre único para este espacio de trabajo",
-          "placeholder": "ej., Enfoque laboral, Planificación familiar"
-        },
-        "desktopView": {
-          "label": "Vista de escritorio",
-          "description": "Vista predeterminada para dispositivos de escritorio"
-        },
-        "mobileView": {
-          "label": "Vista móvil",
-          "description": "Vista predeterminada para dispositivos móviles"
-        },
-        "defaultDate": {
-          "label": "Fecha predeterminada (opcional)",
-          "description": "Fecha a la que saltar al activar el espacio de trabajo (ej., 'hoy', '2024-01-01')",
-          "placeholder": "hoy, próxima semana, 2024-01-01"
-        },
-        "visibleCalendars": {
-          "label": "Calendarios visibles",
-          "description": "Selecciona qué calendarios mostrar (deja vacío para mostrar todos)",
-          "noCalendars": "No hay calendarios configurados. Configura calendarios en la configuración principal primero."
-        },
-        "categoryFilterMode": {
-          "label": "Modo de filtro de categoría",
-          "description": "Elige cómo filtrar categorías",
-          "options": {
-            "showOnly": "Mostrar solo categorías seleccionadas",
-            "hide": "Ocultar categorías seleccionadas"
-          }
-        },
-        "categories": {
-          "label": "Categorías",
-          "description": "Selecciona categorías para incluir/excluir (deja vacío para mostrar todas)",
-          "noCategories": "No hay categorías configuradas. Configura categorías en la configuración de categorización.",
-          "requiresAdvanced": "El filtrado de categorías requiere que la categorización avanzada esté habilitada en la configuración principal."
-        },
-        "notices": {
-          "enableBases": "Por favor, habilita primero el plugin Obsidian Bases."
-        },
-        "overrideBusinessHours": {
-          "label": "Anular horario laboral",
-          "description": "Habilitar horario laboral personalizado para este espacio de trabajo"
-        },
-        "enableBusinessHours": {
-          "label": "Habilitar horario laboral",
-          "description": "Mostrar resaltado de horario laboral en este espacio de trabajo"
-        },
-        "businessDays": {
-          "label": "Días laborales",
-          "description": "Selecciona qué días de la semana son laborales"
-        },
-        "businessHoursStart": {
-          "label": "Hora de inicio laboral",
-          "description": "Cuando comienza tu día laboral (formato: HH:mm)"
-        },
-        "businessHoursEnd": {
-          "label": "Hora de fin laboral",
-          "description": "Cuando termina tu día laboral (formato: HH:mm)"
-        },
-        "timelineCategories": {
-          "label": "Categorías de línea de tiempo",
-          "description": "Estado predeterminado para grupos de categorías de línea de tiempo",
-          "options": {
-            "useDefault": "Usar configuración predeterminada",
-            "expanded": "Expandido por defecto",
-            "collapsed": "Colapsado por defecto"
-          }
-        },
-        "slotMinTime": {
-          "label": "Hora más temprana a mostrar",
-          "description": "Anular la hora más temprana visible en las vistas de cuadrícula de tiempo (formato: HH:mm)",
-          "placeholder": "Usar predeterminado global"
-        },
-        "slotMaxTime": {
-          "label": "Hora más tardía a mostrar",
-          "description": "Anular la hora más tardía visible en las vistas de cuadrícula de tiempo (formato: HH:mm)"
-        },
-        "weekendDisplay": {
-          "label": "Mostrar fines de semana",
-          "description": "Anular si mostrar los fines de semana en el calendario",
-          "options": {
-            "show": "Mostrar fines de semana",
-            "hide": "Ocultar fines de semana"
-          }
-        },
-        "hiddenDays": {
-          "label": "Días ocultos",
-          "description": "Anular qué días ocultar en el calendario",
-          "options": {
-            "showAll": "Mostrar todos los días",
-            "hideWeekends": "Ocultar fines de semana (Dom, Sáb)",
-            "hideSunday": "Ocultar domingo",
-            "hideSaturday": "Ocultar sábado",
-            "hideMonday": "Ocultar lunes",
-            "hideFriday": "Ocultar viernes"
-          }
-        },
-        "dayMaxEvents": {
-          "label": "Máx eventos por día (vista mensual)",
-          "description": "Anular el número máximo de eventos a mostrar por día en la vista mensual",
-          "options": {
-            "useDefault": "Usar límite predeterminado",
-            "noLimit": "Sin límite",
-            "one": "1 evento",
-            "two": "2 eventos",
-            "three": "3 eventos",
-            "four": "4 eventos",
-            "five": "5 eventos",
-            "ten": "10 eventos"
-          }
-        }
-      },
-      "calendarTypes": {
-        "local": "Local:",
-        "dailyNotes": "Notas diarias:",
-        "ics": "ICS:",
-        "caldav": "CalDAV:",
-        "google": "Google:",
-        "outlook": "Outlook:"
-      },
-      "buttons": {
-        "save": "Guardar",
-        "create": "Crear",
-        "cancel": "Cancelar"
-      }
     },
     "bulkCategorize": {
       "title": "Elige un método de actualización masiva",
@@ -1162,8 +857,6 @@
     "view": {
       "errors": {
         "cacheNotLoaded": "La caché de eventos de Full Calendar no está cargada.",
-        "chronoAnalyserDesktopOnly": "El Analizador Chrono solo está disponible en la versión de escritorio.",
-        "chronoAnalyserFailed": "No se pudo abrir el Analizador Chrono. Revisa la consola.",
         "modifyEventFailed": "No se pudo modificar el evento.",
         "taskScheduleFailed": "No se pudo programar la tarea: {{message}}",
         "moveRecurringDayError": "No se puede mover una instancia recurrente a un día diferente. Modifica solo la hora o edita el evento recurrente principal.",
@@ -1173,12 +866,8 @@
         "deletedEvent": "Evento eliminado \"{{title}}\".",
         "taskScheduled": "Tarea programada con éxito"
       },
-      "workspace": {
-        "switcherLabel": "Espacio de trabajo"
-      },
       "buttons": {
-        "analysis": "Análisis",
-        "defaultView": "Vista por defecto"
+        "refresh": "Refresh"
       },
       "contextMenu": {
         "turnIntoTask": "Convertir en tarea",
@@ -1250,7 +939,6 @@
       "OPEN_CALENDAR": "📖 Abrir calendario",
       "OPEN_SIDEBAR": "📖 Abrir barra lateral",
       "OPEN_SETTINGS": "⚙️ Abrir ajustes",
-      "OPEN_CHRONO": "📊 Abrir Analizador Chrono",
       "SHOW_CHANGELOG": "📋 Mostrar registro de cambios",
       "RESET_CACHE": "🗑️ Restablecer caché de eventos",
       "REVALIDATE_REMOTE": "🔄 Revalidar calendarios remotos",
@@ -1260,7 +948,6 @@
     },
     "descriptions": {
       "OPEN_SETTINGS": "Abre la pestaña de ajustes de Full Calendar.",
-      "OPEN_CHRONO": "Inicia el panel del Analizador Chrono.",
       "SHOW_CHANGELOG": "Muestra las últimas notas de la versión.",
       "RESET_CACHE": "Limpia y reconstruye el caché de eventos.",
       "REVALIDATE_REMOTE": "Fuerza una sincronización fresca de todos los calendarios remotos.",
@@ -1344,5 +1031,21 @@
       "unknown": "Unknown error"
     },
     "loading": "Loading..."
+  },
+  "googleTasks": {
+    "selectAccount": {
+      "title": "Connect a Google Account",
+      "description": "Google Tasks uses the same account connection as Google Calendar. Existing accounts may need to be reconnected once to grant Tasks access."
+    },
+    "selectLists": {
+      "title": "Select Google Tasks lists from {{email}}",
+      "noLists": "No new task lists found, or all task lists from this account have been added.",
+      "description": "Choose which Google Tasks lists you would like to show as calendars."
+    },
+    "buttons": {
+      "selectLists": "Select Task Lists",
+      "addLists": "Add {{count}} Task List",
+      "addListsPlural": "Add {{count}} Task Lists"
+    }
   }
 }

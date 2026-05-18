@@ -46,13 +46,6 @@ export class BaseFullUndatedPanel {
   private async loadItems(): Promise<void> {
     const settings = PluginState.getSettings();
     const hiddenCalendarIds = new Set((settings.hiddenCalendarIds ?? []).map(String));
-    const activeWorkspace = settings.activeWorkspace
-      ? settings.workspaces.find(workspace => workspace.id === settings.activeWorkspace)
-      : null;
-    const workspaceVisibleCalendarIds =
-      activeWorkspace && (activeWorkspace.visibleCalendars ?? []).length > 0
-        ? new Set((activeWorkspace.visibleCalendars ?? []).map(String))
-        : null;
 
     const sources = PluginState.getProviderRegistry()
       .getAllSources()
@@ -60,11 +53,7 @@ export class BaseFullUndatedPanel {
         (source): source is CalendarInfo & { type: 'basefull'; id: string; name: string } =>
           source.type === 'basefull' && typeof source.id === 'string'
       )
-      .filter(source => !hiddenCalendarIds.has(String(source.id)))
-      .filter(
-        source =>
-          !workspaceVisibleCalendarIds || workspaceVisibleCalendarIds.has(String(source.id))
-      );
+      .filter(source => !hiddenCalendarIds.has(String(source.id)));
 
     const groups = await Promise.all(
       sources.map(async source => {

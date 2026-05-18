@@ -1,146 +1,9 @@
 {
-  "chrono": {
-    "ui": {
-      "title": "配置数据分析组",
-      "description": "创建分组来分类您的活动。引擎将使用这些规则来生成个性化分析。",
-      "save": "保存配置",
-      "cancel": "取消",
-      "addGroup": "添加新数据分析组",
-      "groupName": "组名称",
-      "groupNamePlaceholder": "例如：工作",
-      "deleteGroup": "删除此组",
-      "persona": {
-        "name": "作为角色分析",
-        "desc": "选择要应用于此组的分析模型。",
-        "productivity": "🎯 生产力",
-        "wellness": "❤️ 健康与日常",
-        "none": "⚪ (在仪表板中忽略)"
-      },
-      "hierarchies": {
-        "name": "匹配层级",
-        "desc": "例如：工作日历、个人日历",
-        "add": "添加层级..."
-      },
-      "projects": {
-        "name": "匹配项目",
-        "desc": "例如：凤凰计划、Q4报告",
-        "add": "添加项目..."
-      },
-      "mutedProjects": {
-        "name": "排除项目",
-        "desc": "排除特定项目（区分大小写，精确匹配），将其排除在习惯一致性检查之外。",
-        "add": "添加排除项目..."
-      },
-      "subprojectKeywords": {
-        "name": "匹配子项目关键词",
-        "desc": "添加关键词，如果在子项目中任何位置找到将匹配。",
-        "placeholder": "例如：设计\n研究\n会议"
-      },
-      "mutedSubprojectKeywords": {
-        "name": "排除子项目关键词",
-        "desc": "通过关键词排除活动。如果子项目包含以下任何关键词（不区分大小写），则将其排除在习惯一致性检查之外。",
-        "placeholder": "例如：已完成\n归档\n旧"
-      },
-      "unsavedChanges": {
-        "title": "未保存的更改",
-        "message": "您有未保存的更改。关闭前是否保存？",
-        "saveAndClose": "保存并关闭",
-        "discard": "放弃更改"
-      },
-      "folderSelectPlaceholder": "选择一个包含时间追踪文件的文件夹...",
-      "errors": {
-        "groupExists": "组名称\"{{name}}\"已存在。"
-      }
-    },
-    "analyser": {
-      "header": "📊 ChronoAnalyser",
-      "subtitle": "Interactive analysis of your time tracking data",
-      "proTip": "Pro tip",
-      "clickNextTip": "Click to see the next tip",
-      "insights": {
-        "title": "💡 Insights",
-        "generate": "Generate insights",
-        "configure": "Configure insights",
-        "placeholder": "Click \"Generate Insights\" to analyze your data."
-      },
-      "filters": {
-        "hierarchy": "📂 Filter by hierarchy (calendar source)",
-        "hierarchyPlaceholder": "All hierarchies (type to filter...)",
-        "project": "📋 Filter by project",
-        "projectPlaceholder": "All projects (type to filter...)",
-        "category": "🔍 Filter by category (e.g., keyword -exclude)",
-        "categoryPlaceholder": "E.g., task.* -review",
-        "dateRange": "📅 Date range",
-        "dateRangePlaceholder": "Select date range (yyyy-mm-dd to yyyy-mm-dd)",
-        "today": "Today",
-        "yesterday": "Yesterday",
-        "thisWeek": "This week",
-        "thisMonth": "This month",
-        "clearDates": "🗑️ Clear dates",
-        "clearDatesTooltip": "Clear date filters"
-      },
-      "config": {
-        "metric": "📏 Metric",
-        "duration": "Duration (hours)",
-        "count": "Event count",
-        "analysisType": "🎯 Analysis type",
-        "pie": "Categorywise (pie)",
-        "sunburst": "Categorywise (sunburst)",
-        "timeSeries": "Time-series trend",
-        "activity": "Activity patterns",
-        "breakdownLevel": "📈 Breakdown level",
-        "hierarchy": "Hierarchy",
-        "project": "Project",
-        "subproject": "Sub-project",
-        "projectsByHierarchy": "Projects by hierarchy",
-        "subprojectsByProject": "Sub-projects by project",
-        "granularity": "🕒 Granularity",
-        "daily": "Daily",
-        "weekly": "Weekly",
-        "monthly": "Monthly",
-        "chartType": "📊 Chart type",
-        "overallTrend": "Overall trend",
-        "stackedByCategory": "Stacked by category",
-        "stackBy": "📚 Stack by",
-        "analyzeBy": "📅 Analyze by",
-        "dayOfWeek": "Day of week",
-        "hourOfDay": "Hour of day (task start)",
-        "heatmap": "Heatmap (day vs hour)",
-        "tooltips": {
-          "categorywise": "Visualize how time is distributed across different categories.",
-          "timeSeries": "Visualize how time spent changes over a period.",
-          "activity": "Identify patterns in when tasks are typically performed.",
-          "dayOfWeek": "Displays a bar chart showing the total hours spent on each day of the week.",
-          "hourOfDay": "Displays a bar chart showing the total hours associated with tasks that start in each hour of the day.",
-          "heatmap": "Displays a heatmap where rows are days of the week, columns are hours of the day, and the color intensity of each cell represents the total hours for tasks starting at that specific day/hour combination."
-        }
-      },
-      "stats": {
-        "totalHours": "Total Hours (Filtered)",
-        "filesInFilter": "Files in Filter",
-        "activeAnalysis": "Active Analysis"
-      },
-      "log": {
-        "title": "📋 Processing log & issues",
-        "noIssues": "No issues found."
-      },
-      "details": {
-        "title": "Category details",
-        "close": "Close",
-        "project": "Project",
-        "subproject": "Sub-project (full)",
-        "duration": "Duration (hrs)",
-        "date": "Date",
-        "filePath": "File path"
-      }
-    }
-  },
   "commands": {
     "newEvent": "新建事件",
     "resetCache": "重置事件缓存",
     "revalidateRemote": "重新验证远程日历",
     "openCalendar": "打开日历",
-    "openChronoAnalyser": "打开数据分析器（仅桌面版）",
     "openSidebar": "在侧边栏打开",
     "syncActivityWatch": "同步 ActivityWatch",
     "nlpQuickAdd": "FCR Command"
@@ -148,13 +11,6 @@
   "notices": {
     "settingsUpdated": "日历已将您的日历设置更新为新格式。",
     "cacheReset": "日历已重置。",
-    "chronoAnalyserMobileDisabled": "数据分析功能仅在 Obsidian 桌面版中可用。",
-    "chronoAnalyserInitializing": "数据分析器：正在初始化事件缓存...",
-    "chronoAnalyserLoadFailed": "加载数据分析器失败。请检查控制台。",
-    "chronoAnalyserConfigureFirst": "请先使用 ⚙️ 图标配置您的数据分析组。",
-    "chronoAnalyserGeneratingInsights": "正在生成分析（这可能需要一些时间）...",
-    "chronoAnalyserInsightsFailed": "生成分析失败。请检查开发者控制台获取错误信息。",
-    "chronoAnalyserInsightsSaved": "分析配置已保存！",
     "googleAuthFailed": "Google 认证失败。请重试。",
     "bulkUpdateError": "批量更新时出错。请检查控制台获取详情。",
     "providerNotRegistered": "{{providerType}} 提供者未注册。",
@@ -521,7 +377,9 @@
         "tasks": "Obsidian Tasks",
         "bases": "Obsidian Bases",
         "tasknotes": "TaskNotes",
-        "outlook": "Outlook Calendar"
+        "outlook": "Outlook Calendar",
+        "googleTasks": "Google Tasks",
+        "basefull": "Base Full"
       },
       "fullNote": {
         "directory": {
@@ -627,35 +485,8 @@
         "buttonCancel": "取消"
       }
     },
-    "workspaces": {
-      "title": "工作区",
-      "description": "创建和管理日历工作区。每个工作区可以有自己的视图设置、可见日历和过滤器。",
-      "addNew": {
-        "label": "添加新工作区",
-        "description": "创建新的日历工作区"
-      },
-      "buttons": {
-        "new": "新建工作区",
-        "edit": "编辑",
-        "duplicate": "复制",
-        "activate": "激活",
-        "active": "已激活",
-        "delete": "删除"
-      },
-      "defaultName": "新工作区",
-      "copyName": "{{name}} 副本"
-    },
     "quickStart": {
       "description": "要开始，请使用 \"Manage calendars\" 部分中的 \"+\" 按钮添加日历来源。"
-    },
-    "viewOptions": {
-      "day": "日",
-      "week": "周",
-      "month": "月",
-      "list": "列表",
-      "threeDays": "3天",
-      "timelineWeek": "时间线周",
-      "timelineDay": "时间线日"
     },
     "weekdays": {
       "sunday": "周日",
@@ -884,6 +715,11 @@
       "tooltips": {
         "recurringTaskCompletion": "重复任务的完成状态可以在日历视图中切换单个实例。",
         "dailyNoteRecurring": "日记不支持重复事件。请改用 \"Full Note\" 日历。"
+      },
+      "calendarPicker": {
+        "placeholder": "Choose a calendar",
+        "local": "Local calendar",
+        "remote": "Remote calendar"
       }
     },
     "deleteRecurring": {
@@ -905,147 +741,6 @@
         "button": "全部删除"
       },
       "cancel": "取消"
-    },
-    "workspace": {
-      "title": {
-        "create": "创建工作区",
-        "edit": "编辑工作区"
-      },
-      "sections": {
-        "general": "通用",
-        "viewConfiguration": "视图配置",
-        "calendarFilters": "日历过滤器",
-        "categoryFilters": "分类过滤器",
-        "appearanceOverrides": "外观覆盖",
-        "viewClipping": "视图裁剪和时间范围"
-      },
-      "fields": {
-        "name": {
-          "label": "名称",
-          "description": "此工作区的唯一名称",
-          "placeholder": "例如：工作专注、家庭计划"
-        },
-        "desktopView": {
-          "label": "桌面视图",
-          "description": "桌面设备的默认视图"
-        },
-        "mobileView": {
-          "label": "移动视图",
-          "description": "移动设备的默认视图"
-        },
-        "defaultDate": {
-          "label": "默认日期（可选）",
-          "description": "激活工作区时跳转的日期（例如：\"today\"、\"2024-01-01\"）",
-          "placeholder": "today, next-week, 2024-01-01"
-        },
-        "visibleCalendars": {
-          "label": "可见日历",
-          "description": "选择要显示的日历（留空则显示全部）",
-          "noCalendars": "未配置日历。请先在主设置中配置日历。"
-        },
-        "categoryFilterMode": {
-          "label": "分类过滤模式",
-          "description": "选择如何过滤分类",
-          "options": {
-            "showOnly": "仅显示选中的分类",
-            "hide": "隐藏选中的分类"
-          }
-        },
-        "categories": {
-          "label": "分类",
-          "description": "选择要包含/排除的分类（留空则显示全部）",
-          "noCategories": "未配置分类。请在分类设置中配置分类。",
-          "requiresAdvanced": "分类过滤需要先在主设置中启用高级分类。"
-        },
-        "notices": {
-          "enableBases": "请先启用 Obsidian Bases 插件。"
-        },
-        "overrideBusinessHours": {
-          "label": "覆盖工作时间",
-          "description": "为此工作区启用自定义工作时间"
-        },
-        "enableBusinessHours": {
-          "label": "启用工作时间",
-          "description": "在此工作区显示工作时间高亮"
-        },
-        "businessDays": {
-          "label": "工作日",
-          "description": "选择一周中的工作日"
-        },
-        "businessHoursStart": {
-          "label": "工作时间开始时间",
-          "description": "工作日开始时间（格式：HH:mm）"
-        },
-        "businessHoursEnd": {
-          "label": "工作时间结束时间",
-          "description": "工作日结束时间（格式：HH:mm）"
-        },
-        "timelineCategories": {
-          "label": "时间线分类",
-          "description": "时间线分类组的默认状态",
-          "options": {
-            "useDefault": "使用默认设置",
-            "expanded": "默认展开",
-            "collapsed": "默认折叠"
-          }
-        },
-        "slotMinTime": {
-          "label": "最早显示时间",
-          "description": "覆盖时间网格视图中的最早可见时间（格式：HH:mm）",
-          "placeholder": "使用全局默认"
-        },
-        "slotMaxTime": {
-          "label": "最晚显示时间",
-          "description": "覆盖时间网格视图中的最晚可见时间（格式：HH:mm）"
-        },
-        "weekendDisplay": {
-          "label": "周末显示",
-          "description": "覆盖是否在日历中显示周末",
-          "options": {
-            "show": "显示周末",
-            "hide": "隐藏周末"
-          }
-        },
-        "hiddenDays": {
-          "label": "隐藏日期",
-          "description": "覆盖要从日历中隐藏的日期",
-          "options": {
-            "showAll": "显示所有日期",
-            "hideWeekends": "隐藏周末（周日、周六）",
-            "hideSunday": "隐藏周日",
-            "hideSaturday": "隐藏周六",
-            "hideMonday": "隐藏周一",
-            "hideFriday": "隐藏周五"
-          }
-        },
-        "dayMaxEvents": {
-          "label": "每日最大事件数（月视图）",
-          "description": "覆盖月视图中每天显示的最大事件数",
-          "options": {
-            "useDefault": "使用默认限制",
-            "noLimit": "无限制",
-            "one": "1 个事件",
-            "two": "2 个事件",
-            "three": "3 个事件",
-            "four": "4 个事件",
-            "five": "5 个事件",
-            "ten": "10 个事件"
-          }
-        }
-      },
-      "calendarTypes": {
-        "local": "本地：",
-        "dailyNotes": "日记：",
-        "ics": "ICS：",
-        "caldav": "CalDAV：",
-        "google": "Google：",
-        "outlook": "Outlook:"
-      },
-      "buttons": {
-        "save": "保存",
-        "create": "创建",
-        "cancel": "取消"
-      }
     },
     "bulkCategorize": {
       "title": "选择批量更新方法",
@@ -1162,8 +857,6 @@
     "view": {
       "errors": {
         "cacheNotLoaded": "日历事件缓存未加载。",
-        "chronoAnalyserDesktopOnly": "数据分析器仅在桌面版可用。",
-        "chronoAnalyserFailed": "打开数据分析器失败。请检查控制台。",
         "modifyEventFailed": "修改事件失败。",
         "taskScheduleFailed": "安排任务失败：{{message}}",
         "moveRecurringDayError": "无法将重复实例移动到不同日期。请仅修改时间或编辑主重复事件。",
@@ -1173,12 +866,8 @@
         "deletedEvent": "已删除事件 \"{{title}}\"。",
         "taskScheduled": "任务安排成功"
       },
-      "workspace": {
-        "switcherLabel": "工作区"
-      },
       "buttons": {
-        "analysis": "分析",
-        "defaultView": "默认视图"
+        "refresh": "Refresh"
       },
       "contextMenu": {
         "turnIntoTask": "转换为任务",
@@ -1250,7 +939,6 @@
       "OPEN_CALENDAR": "📖 Open Calendar",
       "OPEN_SIDEBAR": "📖 Open Sidebar",
       "OPEN_SETTINGS": "⚙️ Open Settings",
-      "OPEN_CHRONO": "📊 Open ChronoAnalyser",
       "SHOW_CHANGELOG": "📋 Show Changelog",
       "RESET_CACHE": "🗑️ Reset Event Cache",
       "REVALIDATE_REMOTE": "🔄 Revalidate Remote Calendars",
@@ -1260,7 +948,6 @@
     },
     "descriptions": {
       "OPEN_SETTINGS": "Opens the Full Calendar settings tab.",
-      "OPEN_CHRONO": "Launches the ChronoAnalyser dashboard.",
       "SHOW_CHANGELOG": "Displays the latest release notes.",
       "RESET_CACHE": "Clears and rebuilds the event cache.",
       "REVALIDATE_REMOTE": "Forces a fresh sync of all remote calendars.",
@@ -1344,5 +1031,21 @@
       "unknown": "Unknown error"
     },
     "loading": "Loading..."
+  },
+  "googleTasks": {
+    "selectAccount": {
+      "title": "Connect a Google Account",
+      "description": "Google Tasks uses the same account connection as Google Calendar. Existing accounts may need to be reconnected once to grant Tasks access."
+    },
+    "selectLists": {
+      "title": "Select Google Tasks lists from {{email}}",
+      "noLists": "No new task lists found, or all task lists from this account have been added.",
+      "description": "Choose which Google Tasks lists you would like to show as calendars."
+    },
+    "buttons": {
+      "selectLists": "Select Task Lists",
+      "addLists": "Add {{count}} Task List",
+      "addListsPlural": "Add {{count}} Task Lists"
+    }
   }
 }

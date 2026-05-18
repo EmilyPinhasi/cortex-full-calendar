@@ -258,21 +258,11 @@ export class CalendarView extends ItemView implements ViewContext {
           this.searchHandler.scheduleApplyFilter();
         },
         customButtons: {
-          workspace: {
-            text: this.uiHandler.getWorkspaceSwitcherText(),
-            click: (ev?: MouseEvent) => {
-              if (ev) this.uiHandler.showWorkspaceSwitcher(ev);
-            }
-          },
           calendars: {
             text: 'Calendars ▾',
             click: (ev?: MouseEvent) => {
               this.uiHandler.showCalendarsMenu(ev);
             }
-          },
-          analysis: {
-            text: t('ui.view.buttons.analysis'),
-            click: () => this.uiHandler.activateChronoAnalyser()
           },
           refresh: {
             text: t('ui.view.buttons.refresh'),

@@ -45,7 +45,6 @@ export function migrateAndSanitizeSettings(settings: unknown): {
     displayTimezone: raw.displayTimezone ?? null,
     lastSystemTimezone: raw.lastSystemTimezone ?? null,
     enableAdvancedCategorization: raw.enableAdvancedCategorization ?? false,
-    chrono_analyser_config: raw.chrono_analyser_config ?? null,
     categorySettings: raw.categorySettings || [],
     useCustomGoogleClient: raw.useCustomGoogleClient ?? false,
     googleClientId: raw.googleClientId ?? '',
@@ -65,8 +64,6 @@ export function migrateAndSanitizeSettings(settings: unknown): {
     enableReminders: raw.enableReminders ?? true,
     enableDefaultReminder: raw.enableDefaultReminder ?? true,
     defaultReminderMinutes: raw.defaultReminderMinutes ?? 10,
-    workspaces: raw.workspaces || [],
-    activeWorkspace: raw.activeWorkspace ?? null,
     hiddenCalendarIds: (raw as Partial<FullCalendarSettings>).hiddenCalendarIds ?? [],
     showEventInStatusBar: (raw as Partial<FullCalendarSettings>).showEventInStatusBar ?? false,
     highlightCurrentOrNextEvent:

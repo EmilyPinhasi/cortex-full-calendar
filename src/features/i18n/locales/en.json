@@ -3,148 +3,11 @@
     "learnMore": "Learn more: ",
     "settingsHeader": "Switch between focused setting groups to keep configuration lighter and easier to scan."
   },
-  "chrono": {
-    "ui": {
-      "title": "Configure Insight Groups",
-      "description": "Create groups to categorize your activities. The engine will use these rules to generate personalized insights.",
-      "save": "Save Configuration",
-      "cancel": "Cancel",
-      "addGroup": "Add New Insight Group",
-      "groupName": "Group Name",
-      "groupNamePlaceholder": "e.g., Work",
-      "deleteGroup": "Delete this group",
-      "persona": {
-        "name": "Analyze as Persona",
-        "desc": "Choose the analytical model to apply to this group.",
-        "productivity": "🎯 Productivity",
-        "wellness": "❤️ Wellness & Routine",
-        "none": "⚪ (Ignore in Dashboard)"
-      },
-      "hierarchies": {
-        "name": "Matching Hierarchies",
-        "desc": "e.g., Work Calendar, Personal Calendar",
-        "add": "Add hierarchy..."
-      },
-      "projects": {
-        "name": "Matching Projects",
-        "desc": "e.g., Project Phoenix, Q4 Report",
-        "add": "Add project..."
-      },
-      "mutedProjects": {
-        "name": "Muted Projects",
-        "desc": "Mute specific projects (case-sensitive, exact match) to exclude them from Habit Consistency checks.",
-        "add": "Add muted project..."
-      },
-      "subprojectKeywords": {
-        "name": "Matching Sub-project Keywords",
-        "desc": "Add keywords that will match if found anywhere in a sub-project.",
-        "placeholder": "eg., design\nresearch\nmeeting"
-      },
-      "mutedSubprojectKeywords": {
-        "name": "Muted Sub-project Keywords",
-        "desc": "Mute activities by keyword. If a sub-project contains any of these (case-insensitive) keywords, it will be excluded from Habit Consistency checks.",
-        "placeholder": "e.g., completed\narchive\nold"
-      },
-      "unsavedChanges": {
-        "title": "Unsaved Changes",
-        "message": "You have unsaved changes. Would you like to save them before closing?",
-        "saveAndClose": "Save and Close",
-        "discard": "Discard Changes"
-      },
-      "folderSelectPlaceholder": "Select a folder with your time tracking files...",
-      "errors": {
-        "groupExists": "Group name \"{{name}}\" already exists."
-      }
-    },
-    "analyser": {
-      "header": "📊 ChronoAnalyser",
-      "subtitle": "Interactive analysis of your time tracking data",
-      "proTip": "Pro tip",
-      "clickNextTip": "Click to see the next tip",
-      "insights": {
-        "title": "💡 Insights",
-        "generate": "Generate insights",
-        "configure": "Configure insights",
-        "placeholder": "Click \"Generate Insights\" to analyze your data."
-      },
-      "filters": {
-        "hierarchy": "📂 Filter by hierarchy (calendar source)",
-        "hierarchyPlaceholder": "All hierarchies (type to filter...)",
-        "project": "📋 Filter by project",
-        "projectPlaceholder": "All projects (type to filter...)",
-        "category": "🔍 Filter by category (e.g., keyword -exclude)",
-        "categoryPlaceholder": "E.g., task.* -review",
-        "dateRange": "📅 Date range",
-        "dateRangePlaceholder": "Select date range (yyyy-mm-dd to yyyy-mm-dd)",
-        "today": "Today",
-        "yesterday": "Yesterday",
-        "thisWeek": "This week",
-        "thisMonth": "This month",
-        "clearDates": "🗑️ Clear dates",
-        "clearDatesTooltip": "Clear date filters"
-      },
-      "config": {
-        "metric": "📏 Metric",
-        "duration": "Duration (hours)",
-        "count": "Event count",
-        "analysisType": "🎯 Analysis type",
-        "pie": "Categorywise (pie)",
-        "sunburst": "Categorywise (sunburst)",
-        "timeSeries": "Time-series trend",
-        "activity": "Activity patterns",
-        "breakdownLevel": "📈 Breakdown level",
-        "hierarchy": "Hierarchy",
-        "project": "Project",
-        "subproject": "Sub-project",
-        "projectsByHierarchy": "Projects by hierarchy",
-        "subprojectsByProject": "Sub-projects by project",
-        "granularity": "🕒 Granularity",
-        "daily": "Daily",
-        "weekly": "Weekly",
-        "monthly": "Monthly",
-        "chartType": "📊 Chart type",
-        "overallTrend": "Overall trend",
-        "stackedByCategory": "Stacked by category",
-        "stackBy": "📚 Stack by",
-        "analyzeBy": "📅 Analyze by",
-        "dayOfWeek": "Day of week",
-        "hourOfDay": "Hour of day (task start)",
-        "heatmap": "Heatmap (day vs hour)",
-        "tooltips": {
-          "categorywise": "Visualize how time is distributed across different categories.",
-          "timeSeries": "Visualize how time spent changes over a period.",
-          "activity": "Identify patterns in when tasks are typically performed.",
-          "dayOfWeek": "Displays a bar chart showing the total hours spent on each day of the week.",
-          "hourOfDay": "Displays a bar chart showing the total hours associated with tasks that start in each hour of the day.",
-          "heatmap": "Displays a heatmap where rows are days of the week, columns are hours of the day, and the color intensity of each cell represents the total hours for tasks starting at that specific day/hour combination."
-        }
-      },
-      "stats": {
-        "totalHours": "Total Hours (Filtered)",
-        "filesInFilter": "Files in Filter",
-        "activeAnalysis": "Active Analysis"
-      },
-      "log": {
-        "title": "📋 Processing log & issues",
-        "noIssues": "No issues found."
-      },
-      "details": {
-        "title": "Category details",
-        "close": "Close",
-        "project": "Project",
-        "subproject": "Sub-project (full)",
-        "duration": "Duration (hrs)",
-        "date": "Date",
-        "filePath": "File path"
-      }
-    }
-  },
   "commands": {
     "newEvent": "New Event",
     "resetCache": "Reset Event Cache",
     "revalidateRemote": "Revalidate remote calendars",
     "openCalendar": "Open Calendar",
-    "openChronoAnalyser": "Open ChronoAnalyser (Desktop Only)",
     "openSidebar": "Open in sidebar",
     "syncActivityWatch": "Sync ActivityWatch",
     "nlpQuickAdd": "FCR Command"
@@ -152,13 +15,6 @@
   "notices": {
     "settingsUpdated": "Full Calendar has updated your calendar settings to a new format.",
     "cacheReset": "Full Calendar has been reset.",
-    "chronoAnalyserMobileDisabled": "The ChronoAnalyser feature is only available on the desktop version of Obsidian.",
-    "chronoAnalyserInitializing": "ChronoAnalyser: Initializing event cache...",
-    "chronoAnalyserLoadFailed": "Failed to load ChronoAnalyser. Please check the console.",
-    "chronoAnalyserConfigureFirst": "Please configure your Insight Groups first using the ⚙️ icon.",
-    "chronoAnalyserGeneratingInsights": "Generating insights (this may take a moment)...",
-    "chronoAnalyserInsightsFailed": "Failed to generate insights. Check the developer console for errors.",
-    "chronoAnalyserInsightsSaved": "Insights configuration saved!",
     "googleAuthFailed": "Google authentication failed. Please try again.",
     "bulkUpdateError": "Error during bulk update. Check console for details.",
     "providerNotRegistered": "{{providerType}} provider is not registered.",
@@ -633,35 +489,8 @@
         "buttonCancel": "Cancel"
       }
     },
-    "workspaces": {
-      "title": "Workspaces",
-      "description": "Create and manage calendar workspaces. Each workspace can have its own view settings, visible calendars, and filters.",
-      "addNew": {
-        "label": "Add new workspace",
-        "description": "Create a new calendar workspace"
-      },
-      "buttons": {
-        "new": "New Workspace",
-        "edit": "Edit",
-        "duplicate": "Duplicate",
-        "activate": "Activate",
-        "active": "Active",
-        "delete": "Delete"
-      },
-      "defaultName": "New Workspace",
-      "copyName": "{{name}} Copy"
-    },
     "quickStart": {
       "description": "To begin, add a calendar source using the \"+\" button in the \"Manage calendars\" section."
-    },
-    "viewOptions": {
-      "day": "Day",
-      "week": "Week",
-      "month": "Month",
-      "list": "List",
-      "threeDays": "3 Days",
-      "timelineWeek": "Timeline Week",
-      "timelineDay": "Timeline Day"
     },
     "weekdays": {
       "sunday": "Sunday",
@@ -917,147 +746,6 @@
       },
       "cancel": "Cancel"
     },
-    "workspace": {
-      "title": {
-        "create": "Create Workspace",
-        "edit": "Edit Workspace"
-      },
-      "sections": {
-        "general": "General",
-        "viewConfiguration": "View Configuration",
-        "calendarFilters": "Calendar Filters",
-        "categoryFilters": "Category Filters",
-        "appearanceOverrides": "Appearance Overrides",
-        "viewClipping": "View Clipping & Time Range"
-      },
-      "fields": {
-        "name": {
-          "label": "Name",
-          "description": "A unique name for this workspace",
-          "placeholder": "e.g., Work Focus, Family Planning"
-        },
-        "desktopView": {
-          "label": "Desktop view",
-          "description": "Default view for desktop devices"
-        },
-        "mobileView": {
-          "label": "Mobile view",
-          "description": "Default view for mobile devices"
-        },
-        "defaultDate": {
-          "label": "Default date (optional)",
-          "description": "Date to jump to when activating workspace (e.g., \"today\", \"2024-01-01\")",
-          "placeholder": "today, next-week, 2024-01-01"
-        },
-        "visibleCalendars": {
-          "label": "Visible calendars",
-          "description": "Select which calendars to show (leave empty to show all)",
-          "noCalendars": "No calendars configured. Configure calendars in the main settings first."
-        },
-        "categoryFilterMode": {
-          "label": "Category filter mode",
-          "description": "Choose how to filter categories",
-          "options": {
-            "showOnly": "Show only selected categories",
-            "hide": "Hide selected categories"
-          }
-        },
-        "categories": {
-          "label": "Categories",
-          "description": "Select categories to include/exclude (leave empty to show all)",
-          "noCategories": "No categories configured. Configure categories in the Categorization settings.",
-          "requiresAdvanced": "Category filtering requires Advanced Categorization to be enabled in the main settings."
-        },
-        "notices": {
-          "enableBases": "Please enable the Obsidian Bases plugin first."
-        },
-        "overrideBusinessHours": {
-          "label": "Override business hours",
-          "description": "Enable custom business hours for this workspace"
-        },
-        "enableBusinessHours": {
-          "label": "Enable business hours",
-          "description": "Show business hours highlighting in this workspace"
-        },
-        "businessDays": {
-          "label": "Business days",
-          "description": "Select which days of the week are business days"
-        },
-        "businessHoursStart": {
-          "label": "Business hours start time",
-          "description": "When your working day begins (format: HH:mm)"
-        },
-        "businessHoursEnd": {
-          "label": "Business hours end time",
-          "description": "When your working day ends (format: HH:mm)"
-        },
-        "timelineCategories": {
-          "label": "Timeline categories",
-          "description": "Default state for timeline category groups",
-          "options": {
-            "useDefault": "Use default setting",
-            "expanded": "Expanded by default",
-            "collapsed": "Collapsed by default"
-          }
-        },
-        "slotMinTime": {
-          "label": "Earliest time to display",
-          "description": "Override the earliest time visible in time grid views (format: HH:mm)",
-          "placeholder": "Use global default"
-        },
-        "slotMaxTime": {
-          "label": "Latest time to display",
-          "description": "Override the latest time visible in time grid views (format: HH:mm)"
-        },
-        "weekendDisplay": {
-          "label": "Weekend display",
-          "description": "Override whether to show weekends in the calendar",
-          "options": {
-            "show": "Show weekends",
-            "hide": "Hide weekends"
-          }
-        },
-        "hiddenDays": {
-          "label": "Hidden days",
-          "description": "Override which days to hide from the calendar",
-          "options": {
-            "showAll": "Show all days",
-            "hideWeekends": "Hide weekends (Sun, Sat)",
-            "hideSunday": "Hide Sunday",
-            "hideSaturday": "Hide Saturday",
-            "hideMonday": "Hide Monday",
-            "hideFriday": "Hide Friday"
-          }
-        },
-        "dayMaxEvents": {
-          "label": "Max events per day (month view)",
-          "description": "Override the maximum number of events to show per day in month view",
-          "options": {
-            "useDefault": "Use default limit",
-            "noLimit": "No limit",
-            "one": "1 event",
-            "two": "2 events",
-            "three": "3 events",
-            "four": "4 events",
-            "five": "5 events",
-            "ten": "10 events"
-          }
-        }
-      },
-      "calendarTypes": {
-        "local": "Local:",
-        "dailyNotes": "Daily Notes:",
-        "ics": "ICS:",
-        "caldav": "CalDAV:",
-        "google": "Google:",
-        "outlook": "Outlook:"
-      },
-      "buttons": {
-        "save": "Save",
-        "create": "Create",
-        "cancel": "Cancel"
-      }
-    },
     "bulkCategorize": {
       "title": "Choose a Bulk-Update Method",
       "description": "How would you like to automatically categorize existing events in your local calendars? Note that this is a one time operation that will modify your event notes to match the required formatting.",
@@ -1251,8 +939,6 @@
     "view": {
       "errors": {
         "cacheNotLoaded": "Full Calendar event cache not loaded.",
-        "chronoAnalyserDesktopOnly": "The ChronoAnalyser is only available on desktop.",
-        "chronoAnalyserFailed": "Failed to open ChronoAnalyser. Please check the console.",
         "modifyEventFailed": "Failed to modify event.",
         "taskScheduleFailed": "Failed to schedule task: {{message}}",
         "moveRecurringDayError": "Cannot move a recurring instance to a different day. Modify the time only or edit the main recurring event.",
@@ -1262,13 +948,8 @@
         "deletedEvent": "Deleted event \"{{title}}\".",
         "taskScheduled": "Task scheduled successfully"
       },
-      "workspace": {
-        "switcherLabel": "Workspace"
-      },
       "buttons": {
-        "analysis": "Analysis",
-        "refresh": "Refresh",
-        "defaultView": "Default View"
+        "refresh": "Refresh"
       },
       "contextMenu": {
         "turnIntoTask": "Turn into task",
@@ -1336,7 +1017,6 @@
       "OPEN_CALENDAR": "📖 Open Calendar",
       "OPEN_SIDEBAR": "📖 Open Sidebar",
       "OPEN_SETTINGS": "⚙️ Open Settings",
-      "OPEN_CHRONO": "📊 Open ChronoAnalyser",
       "SHOW_CHANGELOG": "📋 Show Changelog",
       "SHOW_MILESTONES": "🏅 Show Milestones",
       "RESET_CACHE": "🗑️ Reset Event Cache",
@@ -1346,7 +1026,6 @@
     },
     "descriptions": {
       "OPEN_SETTINGS": "Opens the Full Calendar settings tab.",
-      "OPEN_CHRONO": "Launches the ChronoAnalyser dashboard.",
       "SHOW_CHANGELOG": "Displays the latest release notes.",
       "SHOW_MILESTONES": "Opens the milestones page in settings.",
       "RESET_CACHE": "Clears and rebuilds the event cache.",
