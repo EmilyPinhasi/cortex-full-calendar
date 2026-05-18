@@ -99,6 +99,7 @@ const calendarOptionsSchema = z.discriminatedUnion('type', [
       id: z.string(),
       name: z.string(),
       basePath: z.string(),
+      baseViewIndex: z.number().int().nonnegative().optional(),
       createDirectory: z.string(),
       dateProperty: z.string(),
       statusProperty: z.string().optional(),

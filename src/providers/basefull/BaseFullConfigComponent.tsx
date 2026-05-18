@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { TFolder } from 'obsidian';
+import { TFile, TFolder, parseYaml } from 'obsidian';
 import { ProviderConfigContext } from '../typesProvider';
 import FullCalendarPlugin from '../../main';
 import { BaseFullProviderConfig } from './BaseFullProvider';
+import { BaseFile, BaseView } from '../bases/baseFilter';
 
 export interface BaseFullConfigComponentProps {
   plugin: FullCalendarPlugin;
@@ -20,6 +21,8 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
   onSave
 }) => {
   const [basePath, setBasePath] = React.useState(config.basePath || '');
+  const [baseViewIndex, setBaseViewIndex] = React.useState(config.baseViewIndex ?? 0);
+  const [baseViews, setBaseViews] = React.useState<BaseView[]>([]);
   const [createDirectory, setCreateDirectory] = React.useState(config.createDirectory || '');
   const [dateProperty, setDateProperty] = React.useState(config.dateProperty || 'date');
   const [statusProperty, setStatusProperty] = React.useState(config.statusProperty || '');
@@ -45,17 +48,56 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
   }, [plugin]);
 
   const emitConfig = (next: Partial<BaseFullProviderConfig>) => {
-    onConfigChange({
-      ...config,
+    const nextConfig = {
       basePath,
+      baseViewIndex,
       createDirectory,
       dateProperty,
       statusProperty,
       completeStatusValue,
       incompleteStatusValue,
       ...next
+    };
+    onConfigChange({
+      ...config,
+      ...nextConfig
     });
   };
+
+  React.useEffect(() => {
+    if (!plugin || !basePath) {
+      setBaseViews([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadViews = async () => {
+      const file = plugin.app.vault.getAbstractFileByPath(basePath);
+      if (!(file instanceof TFile)) {
+        if (!cancelled) setBaseViews([]);
+        return;
+      }
+
+      try {
+        const baseData = parseYaml(await plugin.app.vault.read(file)) as BaseFile;
+        const views = Array.isArray(baseData.views) ? baseData.views : [];
+        if (!cancelled) {
+          setBaseViews(views);
+          if (views.length > 0) {
+            setBaseViewIndex(current => (current >= views.length ? 0 : current));
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to parse Base file while loading views', error);
+        if (!cancelled) setBaseViews([]);
+      }
+    };
+
+    void loadViews();
+    return () => {
+      cancelled = true;
+    };
+  }, [basePath, plugin]);
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -66,6 +108,7 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
       basePath,
       createDirectory,
       dateProperty,
+      baseViewIndex,
       statusProperty: statusProperty.trim() || undefined,
       completeStatusValue,
       incompleteStatusValue,
@@ -88,8 +131,10 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
             className="dropdown"
             value={basePath}
             onChange={e => {
-              setBasePath(e.target.value);
-              emitConfig({ basePath: e.target.value });
+              const nextBasePath = e.target.value;
+              setBasePath(nextBasePath);
+              setBaseViewIndex(0);
+              emitConfig({ basePath: nextBasePath, baseViewIndex: 0 });
             }}
           >
             <option value="">Select a base...</option>
@@ -101,6 +146,34 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
           </select>
         </div>
       </div>
+
+      {basePath && baseViews.length > 0 && (
+        <div className="setting-item">
+          <div className="setting-item-info">
+            <div className="setting-item-name">Base view</div>
+            <div className="setting-item-description">
+              Choose which view filters this calendar source should use.
+            </div>
+          </div>
+          <div className="setting-item-control">
+            <select
+              className="dropdown"
+              value={baseViewIndex}
+              onChange={e => {
+                const nextViewIndex = Number(e.target.value);
+                setBaseViewIndex(nextViewIndex);
+                emitConfig({ baseViewIndex: nextViewIndex });
+              }}
+            >
+              {baseViews.map((view, index) => (
+                <option key={index} value={index}>
+                  {view.name || `View ${index + 1}`}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       <div className="setting-item">
         <div className="setting-item-info">

@@ -60,6 +60,21 @@ describe('baseFilter', () => {
     ).toEqual({ and: ['file.ext == "md"', 'file.folder == "20-core"'] });
   });
 
+  it('combines global filters with the selected view filter', () => {
+    expect(
+      combineBaseFilters(
+        {
+          filters: 'file.ext == "md"',
+          views: [
+            { name: 'Core', filters: 'file.folder == "20-core"' },
+            { name: 'Gear', filters: 'file.folder == "00-gear"' }
+          ]
+        },
+        1
+      )
+    ).toEqual({ and: ['file.ext == "md"', 'file.folder == "00-gear"'] });
+  });
+
   it('does not pass files for unsupported filter strings', () => {
     expect(evaluateBaseFilterString('unsupported.filter()', makeFile('20-core/item.md'), makeContext())).toBe(
       false

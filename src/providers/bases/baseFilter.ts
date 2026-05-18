@@ -7,6 +7,7 @@ export interface BaseFilter {
 }
 
 export interface BaseView {
+  name?: string;
   filters?: BaseFilter | string;
 }
 
@@ -106,8 +107,11 @@ function compareValues(left: unknown, operator: string, right: unknown): boolean
   return false;
 }
 
-export function combineBaseFilters(baseData: BaseFile): BaseFilter | string | null {
-  const filters = [baseData.filters, baseData.views?.[0]?.filters].filter(
+export function combineBaseFilters(
+  baseData: BaseFile,
+  viewIndex = 0
+): BaseFilter | string | null {
+  const filters = [baseData.filters, baseData.views?.[viewIndex]?.filters].filter(
     (filter): filter is BaseFilter | string => !!filter
   );
 

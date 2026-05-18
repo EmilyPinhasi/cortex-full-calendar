@@ -15,6 +15,7 @@ export interface BaseFullProviderConfig {
   type: 'basefull';
   id?: string;
   basePath: string;
+  baseViewIndex?: number;
   createDirectory: string;
   dateProperty: string;
   statusProperty?: string;
@@ -181,7 +182,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     const baseData = await this.getBaseData();
     if (!baseData) return [];
 
-    const baseFilter = combineBaseFilters(baseData);
+    const baseFilter = combineBaseFilters(baseData, this.config.baseViewIndex);
     return this.plugin.app.vault.getFiles().filter(file => {
       if (file.extension !== 'md') return false;
       if (!baseFilter) return true;
@@ -207,7 +208,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     if (!this.isFileRelevant(file)) return [];
     const baseData = await this.getBaseData();
     if (!baseData) return [];
-    const baseFilter = combineBaseFilters(baseData);
+    const baseFilter = combineBaseFilters(baseData, this.config.baseViewIndex);
     if (baseFilter && !this.evaluateFilter(baseFilter, file)) return [];
     const event = this.getEventFromFile(file);
     return event ? [event] : [];
@@ -349,6 +350,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
         <div className="setting-item-control">
           <span>{base.basePath}</span>
           <span className="fc-setting-desc">
+            {base.baseViewIndex !== undefined ? `view ${base.baseViewIndex + 1} / ` : ''}
             {base.dateProperty || DEFAULT_DATE_PROPERTY}
             {base.statusProperty ? ` / ${base.statusProperty}` : ''}
           </span>
