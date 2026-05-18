@@ -16,9 +16,22 @@ import { showNotice } from '../../../../utils/showNotice';
 import { PluginState } from '../../../../core/PluginState';
 
 import * as React from 'react';
+import { setIcon } from 'obsidian';
 import { CalendarInfo } from '../../../../types/calendar_settings';
 import FullCalendarPlugin from '../../../../main';
 import { t } from '../../../../features/i18n/i18n';
+
+const SettingsRowIcon = ({ name }: { name: string }) => {
+  const ref = React.useRef<HTMLSpanElement>(null);
+
+  React.useEffect(() => {
+    if (ref.current) {
+      setIcon(ref.current, name);
+    }
+  }, [name]);
+
+  return <span ref={ref} aria-hidden="true" />;
+};
 
 // Define props for the new stable component
 interface CalendarSettingRowProps {
@@ -47,10 +60,16 @@ const CalendarSettingRow = ({
   canMoveUp,
   canMoveDown
 }: CalendarSettingRowProps) => {
+  const hasTemplatePath = setting.type === 'local' || setting.type === 'basefull';
+
   return (
-    <div className="setting-item">
+    <div
+      className={`setting-item ofc-calendar-setting-row ${
+        hasTemplatePath ? 'has-template-path' : 'has-no-template-path'
+      }`}
+    >
       <button type="button" onClick={deleteCalendar} className="fc-setting-delete-btn">
-        ✕
+        <SettingsRowIcon name="x" />
       </button>
       <div className="fc-setting-reorder-controls">
         <button
@@ -61,7 +80,7 @@ const CalendarSettingRow = ({
           aria-label="Move up"
           title="Move up"
         >
-          ▲
+          <SettingsRowIcon name="arrow-up" />
         </button>
         <button
           type="button"
@@ -71,10 +90,10 @@ const CalendarSettingRow = ({
           aria-label="Move down"
           title="Move down"
         >
-          ▼
+          <SettingsRowIcon name="arrow-down" />
         </button>
       </div>
-      <div className="setting-item-control u-flex-1">
+      <div className="setting-item-control ofc-calendar-setting-name">
         <input
           type="text"
           value={setting.name || ''}
@@ -82,9 +101,9 @@ const CalendarSettingRow = ({
           onChange={e => onNameChange(e.target.value)}
         />
       </div>
-      {children}
-      {setting.type === 'local' || setting.type === 'basefull' ? (
-        <div className="setting-item-control">
+      <div className="ofc-calendar-setting-provider">{children}</div>
+      {hasTemplatePath ? (
+        <div className="setting-item-control ofc-calendar-setting-template">
           <input
             type="text"
             value={(setting as { newNoteTemplatePath?: string }).newNoteTemplatePath || ''}
@@ -97,7 +116,7 @@ const CalendarSettingRow = ({
       <input
         type="color"
         value={setting.color}
-        className="fc-setting-color-input"
+        className="fc-setting-color-input ofc-calendar-setting-color"
         onChange={e => onColorChange(e.target.value)}
       />
     </div>

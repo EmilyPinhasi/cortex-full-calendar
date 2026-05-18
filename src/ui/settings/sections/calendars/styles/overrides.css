@@ -362,21 +362,73 @@
 /* Generic styles for inputs in calendar settings */
 .fc-setting-input {
     width: 100%;
-    margin-left: 4px;
-    margin-right: 4px;
+    min-width: 0;
+}
+
+.ofc-calendar-setting-row.setting-item {
+    display: grid;
+    align-items: center;
+    gap: 0.5rem;
+    grid-template-areas: "delete reorder name provider color";
+    grid-template-columns: 2.75rem 2.75rem minmax(10rem, 1fr) minmax(16rem, 2fr) 3.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.ofc-calendar-setting-row.has-template-path {
+    grid-template-areas: "delete reorder name provider template color";
+    grid-template-columns:
+        2.75rem 2.75rem minmax(9rem, 1fr) minmax(13rem, 1.6fr) minmax(11rem, 1.1fr) 3.5rem;
+}
+
+.ofc-calendar-setting-row .setting-item-control {
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+}
+
+.ofc-calendar-setting-name {
+    grid-area: name;
+}
+
+.ofc-calendar-setting-provider {
+    grid-area: provider;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.ofc-calendar-setting-provider .setting-item-control {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.ofc-calendar-setting-provider .setting-item-control>span,
+.fc-setting-desc {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fc-setting-desc {
+    color: var(--text-muted);
+}
+
+.ofc-calendar-setting-template {
+    grid-area: template;
 }
 
 /* Styles for the Heading setting component */
 .fc-heading-setting-control {
-    display: block;
-    text-align: center;
+    justify-content: center;
 }
 
 .fc-heading-setting-control .fc-setting-input.is-inline {
-    margin-left: 4px;
-    margin-right: 4px;
-    /* Overriding width for inline appearance */
-    width: auto;
+    width: min(12rem, 100%);
 }
 
 .fc-heading-setting-control .fc-heading-setting-suffix {
@@ -385,22 +437,37 @@
 
 /* Styles for specific controls in calendar settings */
 .fc-setting-delete-btn {
-    max-width: 15%;
+    grid-area: delete;
+    justify-self: center;
 }
 
 .fc-setting-reorder-controls {
+    grid-area: reorder;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    margin-right: 0.5rem;
+    justify-self: center;
+}
+
+.fc-setting-delete-btn,
+.fc-setting-reorder-btn {
+    font-size: 0;
+}
+
+.fc-setting-delete-btn svg,
+.fc-setting-reorder-btn svg {
+    width: 1rem;
+    height: 1rem;
 }
 
 .fc-setting-reorder-btn {
-    padding: 0 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 2.5rem;
     min-height: 0;
     height: 1.2rem;
-    line-height: 1;
-    font-size: 0.7rem;
     cursor: pointer;
 }
 
@@ -410,8 +477,32 @@
 }
 
 .fc-setting-color-input {
-    max-width: 25%;
+    grid-area: color;
+    justify-self: end;
     min-width: 3rem;
+    max-width: 3.5rem;
+    width: 100%;
+}
+
+@media (max-width: 760px) {
+    .ofc-calendar-setting-row.setting-item,
+    .ofc-calendar-setting-row.has-template-path {
+        grid-template-areas:
+            "delete reorder color"
+            "name name name"
+            "provider provider provider"
+            "template template template";
+        grid-template-columns: 2.75rem 2.75rem 1fr;
+    }
+
+    .ofc-calendar-setting-provider {
+        grid-auto-flow: row;
+    }
+
+    .fc-setting-color-input {
+        justify-self: end;
+        width: 3.5rem;
+    }
 }
 
 /* Shadow events styling for resourceTimeline view */
