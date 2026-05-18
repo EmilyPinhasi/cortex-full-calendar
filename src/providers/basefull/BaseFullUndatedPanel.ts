@@ -26,6 +26,7 @@ function isBaseFullUndatedProvider(provider: unknown): provider is BaseFullUndat
 
 export class BaseFullUndatedPanel {
   private collapsed = false;
+  private collapsedCalendarIds = new Set<string>();
   private groups: BaseFullUndatedGroup[] = [];
   private draggable: Draggable | null = null;
 
@@ -43,11 +44,26 @@ export class BaseFullUndatedPanel {
   }
 
   private async loadItems(): Promise<void> {
+    const settings = PluginState.getSettings();
+    const hiddenCalendarIds = new Set((settings.hiddenCalendarIds ?? []).map(String));
+    const activeWorkspace = settings.activeWorkspace
+      ? settings.workspaces.find(workspace => workspace.id === settings.activeWorkspace)
+      : null;
+    const workspaceVisibleCalendarIds =
+      activeWorkspace && (activeWorkspace.visibleCalendars ?? []).length > 0
+        ? new Set((activeWorkspace.visibleCalendars ?? []).map(String))
+        : null;
+
     const sources = PluginState.getProviderRegistry()
       .getAllSources()
       .filter(
         (source): source is CalendarInfo & { type: 'basefull'; id: string; name: string } =>
           source.type === 'basefull' && typeof source.id === 'string'
+      )
+      .filter(source => !hiddenCalendarIds.has(String(source.id)))
+      .filter(
+        source =>
+          !workspaceVisibleCalendarIds || workspaceVisibleCalendarIds.has(String(source.id))
       );
 
     const groups = await Promise.all(
@@ -70,6 +86,12 @@ export class BaseFullUndatedPanel {
     this.groups = groups
       .filter((group): group is BaseFullUndatedGroup => group !== null)
       .filter(group => group.items.length > 0);
+    const currentIds = new Set(this.groups.map(group => group.calendarId));
+    this.collapsedCalendarIds.forEach(calendarId => {
+      if (!currentIds.has(calendarId)) {
+        this.collapsedCalendarIds.delete(calendarId);
+      }
+    });
   }
 
   private render(): void {
@@ -119,7 +141,41 @@ export class BaseFullUndatedPanel {
     for (const group of this.groups) {
       const groupEl = listEl.createDiv({ cls: 'basefull-undated-group' });
       groupEl.style.setProperty('--basefull-calendar-color', group.color);
-      groupEl.createDiv({ cls: 'basefull-undated-group-title', text: group.calendarName });
+      const canCollapseGroup = this.groups.length > 1;
+      const isGroupCollapsed =
+        canCollapseGroup && this.collapsedCalendarIds.has(group.calendarId);
+      groupEl.toggleClass('is-collapsible', canCollapseGroup);
+      groupEl.toggleClass('is-collapsed', isGroupCollapsed);
+
+      const groupTitleEl = groupEl.createEl(canCollapseGroup ? 'button' : 'div', {
+        cls: 'basefull-undated-group-title',
+        attr: canCollapseGroup
+          ? {
+              type: 'button',
+              'aria-expanded': String(!isGroupCollapsed)
+            }
+          : undefined
+      });
+      groupTitleEl.createSpan({ cls: 'basefull-undated-group-name', text: group.calendarName });
+      groupTitleEl.createSpan({
+        cls: 'basefull-undated-group-count',
+        text: String(group.items.length)
+      });
+
+      if (canCollapseGroup) {
+        groupTitleEl.addEventListener('click', () => {
+          if (this.collapsedCalendarIds.has(group.calendarId)) {
+            this.collapsedCalendarIds.delete(group.calendarId);
+          } else {
+            this.collapsedCalendarIds.add(group.calendarId);
+          }
+          this.render();
+        });
+      }
+
+      if (isGroupCollapsed) {
+        continue;
+      }
 
       for (const item of group.items) {
         const itemEl = groupEl.createDiv({
