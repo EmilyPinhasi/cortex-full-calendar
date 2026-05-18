@@ -24,9 +24,9 @@ function makeFile(path: string): TFile {
   return file;
 }
 
-function makeContext(frontmatter: Record<string, unknown> = {}) {
+function makeContext(frontmatter: Record<string, unknown> = {}, extra: Partial<CachedMetadata> = {}) {
   return {
-    getFileCache: (_file: TFile): CachedMetadata => ({ frontmatter })
+    getFileCache: (_file: TFile): CachedMetadata => ({ frontmatter, ...extra })
   };
 }
 
@@ -73,6 +73,51 @@ describe('baseFilter', () => {
         1
       )
     ).toEqual({ and: ['file.ext == "md"', 'file.folder == "00-gear"'] });
+  });
+
+  it('supports common Bases property functions', () => {
+    const file = makeFile('20-core/item.md');
+    const context = makeContext({ status: 'active', tags: ['work', 'focus'], empty: '' });
+
+    expect(evaluateBaseFilterString('file.hasProperty("status")', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('empty.isEmpty()', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('tags.contains("focus")', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('note["status"] == "active"', file, context)).toBe(true);
+  });
+
+  it('supports multi-tag and link filters', () => {
+    const file = makeFile('20-core/item.md');
+    const context = makeContext(
+      {},
+      {
+        tags: [
+          {
+            tag: '#project',
+            position: {
+              start: { line: 0, col: 0, offset: 0 },
+              end: { line: 0, col: 8, offset: 8 }
+            }
+          }
+        ],
+        links: [
+          {
+            link: 'Projects/Home',
+            original: '[[Projects/Home]]',
+            position: {
+              start: { line: 0, col: 0, offset: 0 },
+              end: { line: 0, col: 17, offset: 17 }
+            }
+          }
+        ]
+      }
+    );
+
+    expect(evaluateBaseFilterString('file.hasTag("area", "project")', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('file.tags.contains("project")', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('file.hasLink("Projects/Home")', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('file.links.contains("Projects/Home")', file, context)).toBe(
+      true
+    );
   });
 
   it('does not pass files for unsupported filter strings', () => {

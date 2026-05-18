@@ -40,6 +40,37 @@ function stripQuotes(value: string): string {
   return trimmed;
 }
 
+function splitArgs(args: string): string[] {
+  const parts: string[] = [];
+  let current = '';
+  let quote: '"' | "'" | null = null;
+  let depth = 0;
+
+  for (let i = 0; i < args.length; i++) {
+    const char = args[i];
+    if ((char === '"' || char === "'") && args[i - 1] !== '\\') {
+      quote = quote === char ? null : quote || char;
+    }
+
+    if (!quote) {
+      if (char === '(' || char === '[' || char === '{') depth++;
+      if (char === ')' || char === ']' || char === '}') depth--;
+      if (char === ',' && depth === 0) {
+        parts.push(current.trim());
+        current = '';
+        continue;
+      }
+    }
+
+    current += char;
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim());
+  }
+  return parts;
+}
+
 function splitOutsideQuotes(statement: string, operator: string): string[] {
   const parts: string[] = [];
   let current = '';
@@ -80,6 +111,8 @@ function getFileProperty(file: TFile, property: string): unknown {
       return getFolderPath(file);
     case 'name':
       return file.name;
+    case 'basename':
+      return file.basename;
     case 'path':
       return normalizePath(file.path);
     default:
@@ -88,23 +121,110 @@ function getFileProperty(file: TFile, property: string): unknown {
 }
 
 function parseLiteral(value: string): unknown {
-  const stripped = stripQuotes(value);
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+  const trimmed = value.trim();
+  const stripped = stripQuotes(trimmed);
+  if (trimmed === 'true') return true;
+  if (trimmed === 'false') return false;
+  if (trimmed === 'null') return null;
+  if (trimmed === 'undefined') return undefined;
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
   return stripped;
 }
 
+function normalizeComparableValue(value: unknown): unknown {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (typeof value === 'string') {
+    const date = Date.parse(value);
+    if (/^\d{4}-\d{2}-\d{2}/.test(value) && !Number.isNaN(date)) {
+      return date;
+    }
+  }
+  return value;
+}
+
 function compareValues(left: unknown, operator: string, right: unknown): boolean {
-  if (operator === '==') return left === right;
-  if (operator === '!=') return left !== right;
-  if (typeof left === 'number' && typeof right === 'number') {
-    if (operator === '>') return left > right;
-    if (operator === '>=') return left >= right;
-    if (operator === '<') return left < right;
-    if (operator === '<=') return left <= right;
+  const normalizedLeft = normalizeComparableValue(left);
+  const normalizedRight = normalizeComparableValue(right);
+
+  if (operator === '==') return normalizedLeft === normalizedRight;
+  if (operator === '!=') return normalizedLeft !== normalizedRight;
+  if (typeof normalizedLeft === 'number' && typeof normalizedRight === 'number') {
+    if (operator === '>') return normalizedLeft > normalizedRight;
+    if (operator === '>=') return normalizedLeft >= normalizedRight;
+    if (operator === '<') return normalizedLeft < normalizedRight;
+    if (operator === '<=') return normalizedLeft <= normalizedRight;
   }
   return false;
+}
+
+function isEmptyValue(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'string') return value.trim().length === 0;
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === 'object') return Object.keys(value).length === 0;
+  return false;
+}
+
+function toSearchableString(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (value && typeof value === 'object' && 'path' in value) {
+    const path = (value as { path?: unknown }).path;
+    return typeof path === 'string' ? path : null;
+  }
+  return null;
+}
+
+function valueContains(left: unknown, right: unknown): boolean {
+  if (Array.isArray(left)) {
+    return (left as unknown[]).some(item => {
+      const itemValue = toSearchableString(item) ?? item;
+      if (compareValues(itemValue, '==', right)) return true;
+      if (typeof itemValue === 'string' && typeof right === 'string') {
+        return itemValue === `#${right}` || `#${itemValue}` === right;
+      }
+      return false;
+    });
+  }
+
+  const leftString = toSearchableString(left);
+  const rightString = toSearchableString(right);
+  if (leftString !== null && rightString !== null) {
+    return leftString.includes(rightString);
+  }
+
+  return false;
+}
+
+function getPropertyValue(
+  expression: string,
+  file: TFile,
+  cache: CachedMetadata | null
+): unknown {
+  const metadata: Record<string, unknown> = cache?.frontmatter || {};
+  const trimmed = expression.trim();
+
+  if (trimmed.startsWith('file.')) {
+    if (trimmed === 'file.tags') {
+      return getAllTags(cache || {}) || [];
+    }
+    if (trimmed === 'file.links') {
+      return [...(cache?.links ?? []), ...(cache?.frontmatterLinks ?? [])].map(link => link.link);
+    }
+    if (trimmed === 'file.properties') {
+      return cache?.frontmatter || {};
+    }
+    return getFileProperty(file, trimmed.slice('file.'.length));
+  }
+
+  const noteBracketMatch = trimmed.match(/^note\[(["'][^"']+["'])\]$/);
+  if (noteBracketMatch) {
+    return metadata[stripQuotes(noteBracketMatch[1])];
+  }
+
+  return metadata[trimmed.replace(/^note\./, '')];
 }
 
 export function combineBaseFilters(
@@ -144,10 +264,10 @@ export function evaluateBaseFilterString(
   const cache = context.getFileCache(file);
   const tags = getAllTags(cache || {}) || [];
 
-  const tagMatch = trimmed.match(/^file\.hasTag\((["'][^"']+["'])\)$/);
+  const tagMatch = trimmed.match(/^file\.hasTag\((.+)\)$/);
   if (tagMatch) {
-    const tag = stripQuotes(tagMatch[1]);
-    return tags.some(t => t === tag || t === `#${tag}`);
+    const targetTags = splitArgs(tagMatch[1]).map(arg => stripQuotes(arg));
+    return targetTags.some(tag => tags.some(t => t === tag || t === `#${tag}`));
   }
 
   const inFolderMatch = trimmed.match(/^file\.inFolder\((["'][^"']+["'])\)$/);
@@ -155,26 +275,47 @@ export function evaluateBaseFilterString(
     return fileIsInFolder(file, stripQuotes(inFolderMatch[1]));
   }
 
+  const hasPropertyMatch = trimmed.match(/^file\.hasProperty\((["'][^"']+["'])\)$/);
+  if (hasPropertyMatch) {
+    const property = stripQuotes(hasPropertyMatch[1]);
+    return !isEmptyValue((cache?.frontmatter || {})[property]);
+  }
+
+  const hasLinkMatch = trimmed.match(/^file\.hasLink\((["'][^"']+["'])\)$/);
+  if (hasLinkMatch) {
+    const target = stripQuotes(hasLinkMatch[1]);
+    const links = [...(cache?.links ?? []), ...(cache?.frontmatterLinks ?? [])];
+    return links.some(link => link.link === target || normalizePath(link.link) === normalizePath(target));
+  }
+
   const containsMatch = trimmed.match(/^file\.folder\.contains\((["'][^"']+["'])\)$/);
   if (containsMatch) {
     return getFolderPath(file).includes(stripQuotes(containsMatch[1]));
   }
 
-  const startsWithMatch = trimmed.match(/^file\.(folder|path)\.startsWith\((["'][^"']+["'])\)$/);
+  const methodMatch = trimmed.match(/^(.+)\.(contains|isEmpty)\((.*)\)$/);
+  if (methodMatch) {
+    const [, expression, method, rawArgs] = methodMatch;
+    const left = getPropertyValue(expression, file, cache);
+    if (method === 'isEmpty') {
+      return isEmptyValue(left);
+    }
+    const args = splitArgs(rawArgs);
+    return args.some(arg => valueContains(left, parseLiteral(arg)));
+  }
+
+  const startsWithMatch = trimmed.match(/^file\.(folder|path|name|basename)\.startsWith\((["'][^"']+["'])\)$/);
   if (startsWithMatch) {
     const value = getFileProperty(file, startsWithMatch[1]);
     return typeof value === 'string' && value.startsWith(stripQuotes(startsWithMatch[2]));
   }
 
   const comparisonMatch = trimmed.match(
-    /^(file\.(?:ext|folder|name|path)|(?:note\.)?[\w -]+)\s*(==|!=|>=|<=|>|<)\s*(.+)$/
+    /^(file\.(?:ext|folder|name|basename|path)|note\[[^\]]+\]|(?:note\.)?[\w -]+)\s*(==|!=|>=|<=|>|<)\s*(.+)$/
   );
   if (comparisonMatch) {
     const [, property, operator, rawRight] = comparisonMatch;
-    const metadata: Record<string, unknown> = cache?.frontmatter || {};
-    const left = property.startsWith('file.')
-      ? getFileProperty(file, property.slice('file.'.length))
-      : metadata[property.replace(/^note\./, '')];
+    const left = getPropertyValue(property, file, cache);
     return compareValues(left, operator, parseLiteral(rawRight.trim()));
   }
 
