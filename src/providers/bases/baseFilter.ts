@@ -123,6 +123,7 @@ function getFileProperty(file: TFile, property: string): unknown {
 function parseLiteral(value: string): unknown {
   const trimmed = value.trim();
   const stripped = stripQuotes(trimmed);
+  if (trimmed === 'today()') return new Date().toISOString().slice(0, 10);
   if (trimmed === 'true') return true;
   if (trimmed === 'false') return false;
   if (trimmed === 'null') return null;
@@ -196,6 +197,14 @@ function valueContains(left: unknown, right: unknown): boolean {
   }
 
   return false;
+}
+
+function valuesContainAny(left: unknown, values: unknown[]): boolean {
+  return values.some(value => valueContains(left, value));
+}
+
+function valuesContainAll(left: unknown, values: unknown[]): boolean {
+  return values.every(value => valueContains(left, value));
 }
 
 function getPropertyValue(
@@ -293,7 +302,7 @@ export function evaluateBaseFilterString(
     return getFolderPath(file).includes(stripQuotes(containsMatch[1]));
   }
 
-  const methodMatch = trimmed.match(/^(.+)\.(contains|isEmpty)\((.*)\)$/);
+  const methodMatch = trimmed.match(/^(.+)\.(contains|containsAny|containsAll|isEmpty)\((.*)\)$/);
   if (methodMatch) {
     const [, expression, method, rawArgs] = methodMatch;
     const left = getPropertyValue(expression, file, cache);
@@ -301,7 +310,14 @@ export function evaluateBaseFilterString(
       return isEmptyValue(left);
     }
     const args = splitArgs(rawArgs);
-    return args.some(arg => valueContains(left, parseLiteral(arg)));
+    const values = args.map(arg => parseLiteral(arg));
+    if (method === 'containsAll') {
+      return valuesContainAll(left, values);
+    }
+    if (method === 'containsAny') {
+      return valuesContainAny(left, values);
+    }
+    return values.some(value => valueContains(left, value));
   }
 
   const startsWithMatch = trimmed.match(/^file\.(folder|path|name|basename)\.startsWith\((["'][^"']+["'])\)$/);

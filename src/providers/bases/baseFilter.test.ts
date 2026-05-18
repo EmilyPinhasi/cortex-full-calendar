@@ -1,5 +1,5 @@
 import { CachedMetadata, TFile, TFolder } from 'obsidian';
-import { combineBaseFilters, evaluateBaseFilterString } from './baseFilter';
+import { combineBaseFilters, evaluateBaseFilter, evaluateBaseFilterString } from './baseFilter';
 
 function makeFolder(path: string): TFolder {
   const parts = path.split('/').filter(Boolean);
@@ -82,7 +82,39 @@ describe('baseFilter', () => {
     expect(evaluateBaseFilterString('file.hasProperty("status")', file, context)).toBe(true);
     expect(evaluateBaseFilterString('empty.isEmpty()', file, context)).toBe(true);
     expect(evaluateBaseFilterString('tags.contains("focus")', file, context)).toBe(true);
+    expect(evaluateBaseFilterString('tags.containsAny("focus", "home")', file, context)).toBe(
+      true
+    );
+    expect(evaluateBaseFilterString('tags.containsAll("work", "focus")', file, context)).toBe(
+      true
+    );
     expect(evaluateBaseFilterString('note["status"] == "active"', file, context)).toBe(true);
+  });
+
+  it('evaluates a real Base view filter with containsAny and negation', () => {
+    const file = makeFile('20-core/recipes/item.md');
+    const context = makeContext({
+      type: ['recipe'],
+      status: ['3-todo']
+    });
+
+    expect(
+      evaluateBaseFilter(
+        {
+          and: [
+            'type.containsAny("recipe")',
+            {
+              and: [
+                '!status.isEmpty()',
+                '!status.containsAny("4-toorganize", "4-toscrape")'
+              ]
+            }
+          ]
+        },
+        file,
+        context
+      )
+    ).toBe(true);
   });
 
   it('supports multi-tag and link filters', () => {
