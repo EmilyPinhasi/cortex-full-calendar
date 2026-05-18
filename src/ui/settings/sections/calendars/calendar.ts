@@ -73,7 +73,7 @@ interface ExtraRenderProps {
   resources?: { id: string; title: string; eventColor?: string }[];
   onViewChange?: () => void; // Add view change callback
   businessHours?: boolean | object; // Support for business hours
-  drop?: (taskId: string, date: Date) => Promise<void>; // Drag-and-drop from backlog
+  drop?: (payload: ExternalCalendarDrop, date: Date) => Promise<void>;
   timeZone?: string;
 
   // New granular view configuration properties
@@ -89,6 +89,10 @@ interface ExtraRenderProps {
   initialSearchQuery?: string;
   onEventsSet?: () => void;
 }
+
+export type ExternalCalendarDrop =
+  | { type: 'task'; taskId: string }
+  | { type: 'basefull'; calendarId: string; path: string };
 
 type TimeGridDayHeaderFormat =
   | 'ddmm-day'
@@ -754,15 +758,21 @@ export async function renderCalendar(
       onEventsSet?.();
     },
 
-    // Enable drag-and-drop from external sources (e.g., Tasks Backlog)
+    // Enable drag-and-drop from external sources.
     droppable: drop && true,
     drop:
       drop &&
       (info => {
-        // Get the task ID from the dragged element's data transfer
         const taskId = info.draggedEl.getAttribute('data-task-id');
         if (taskId) {
-          void drop(taskId, info.date);
+          void drop({ type: 'task', taskId }, info.date);
+          return;
+        }
+
+        const calendarId = info.draggedEl.getAttribute('data-basefull-calendar-id');
+        const path = info.draggedEl.getAttribute('data-basefull-path');
+        if (calendarId && path) {
+          void drop({ type: 'basefull', calendarId, path }, info.date);
         }
       }),
 

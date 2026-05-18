@@ -1,8 +1,15 @@
 .ofc-calendar-shell {
+    display: flex;
     height: 100%;
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
+}
+
+.ofc-calendar-host {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
 }
 
 .is-phone .ofc-calendar-shell {

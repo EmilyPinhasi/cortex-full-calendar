@@ -26,6 +26,11 @@ export interface BaseFullProviderConfig {
   newNoteTemplatePath?: string;
 }
 
+export interface BaseFullUndatedItem {
+  path: string;
+  title: string;
+}
+
 const DEFAULT_DATE_PROPERTY = 'date';
 const DEFAULT_COMPLETE_STATUS = 'done';
 const DEFAULT_INCOMPLETE_STATUS = 'todo';
@@ -147,6 +152,16 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     return this.config.incompleteStatusValue || DEFAULT_INCOMPLETE_STATUS;
   }
 
+  private getDateFromMetadata(metadata: Record<string, unknown>): string | null {
+    return (
+      toDateString(metadata[this.dateProperty]) ||
+      toDateString(metadata.date) ||
+      toDateString(metadata.start) ||
+      toDateString(metadata.startTime) ||
+      toDateString(metadata.due)
+    );
+  }
+
   private isBasesEnabled(): boolean {
     const app = this.plugin.app as unknown as {
       internalPlugins?: { getPluginById: (id: string) => unknown };
@@ -214,6 +229,39 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     return event ? [event] : [];
   }
 
+  async getUndatedItems(): Promise<BaseFullUndatedItem[]> {
+    const files = await this.getFilteredFiles();
+    return files
+      .map(file => {
+        const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};
+        if (this.getDateFromMetadata(metadata)) {
+          return null;
+        }
+
+        return {
+          path: file.path,
+          title: typeof metadata.title === 'string' ? metadata.title : file.basename
+        };
+      })
+      .filter((item): item is BaseFullUndatedItem => item !== null);
+  }
+
+  async scheduleUndatedItem(path: string, date: Date): Promise<void> {
+    const file = this.app.getFileByPath(path);
+    if (!file) {
+      throw new Error(`File ${path} not found.`);
+    }
+
+    const dateString = DateTime.fromJSDate(date).toISODate();
+    if (!dateString) {
+      throw new Error('Could not determine drop date.');
+    }
+
+    await this.app.rewrite(file, page =>
+      modifyFrontmatterString(page, { [this.dateProperty]: dateString })
+    );
+  }
+
   isFileRelevant(file: TFile): boolean {
     if (file.extension !== 'md') return false;
     return true;
@@ -223,12 +271,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
     if (!metadata) return null;
 
-    const date =
-      toDateString(metadata[this.dateProperty]) ||
-      toDateString(metadata.date) ||
-      toDateString(metadata.start) ||
-      toDateString(metadata.startTime) ||
-      toDateString(metadata.due);
+    const date = this.getDateFromMetadata(metadata);
     if (!date) return null;
 
     const statusProperty = this.config.statusProperty;

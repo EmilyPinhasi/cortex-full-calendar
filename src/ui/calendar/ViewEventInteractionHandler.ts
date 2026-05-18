@@ -13,6 +13,23 @@ import { dateEndpointsToFrontmatter, fromEventApi } from '../../core/interop';
 import { TasksBacklogView, TASKS_BACKLOG_VIEW_TYPE } from '../../providers/tasks/TasksBacklogView';
 import { ViewContext } from './ViewContext';
 import { validateEvent, type CalendarInfo, type OFCEvent } from '../../types';
+import type { ExternalCalendarDrop } from '../settings/sections/calendars/calendar';
+
+interface BaseFullDropScheduler {
+  type: 'basefull';
+  scheduleUndatedItem(path: string, date: Date): Promise<void>;
+  getEvents(): Promise<[OFCEvent, import('../../types').EventLocation | null][]>;
+}
+
+function isBaseFullDropScheduler(provider: unknown): provider is BaseFullDropScheduler {
+  return (
+    !!provider &&
+    typeof provider === 'object' &&
+    (provider as { type?: unknown }).type === 'basefull' &&
+    typeof (provider as { scheduleUndatedItem?: unknown }).scheduleUndatedItem === 'function' &&
+    typeof (provider as { getEvents?: unknown }).getEvents === 'function'
+  );
+}
 
 interface CreateCalendarChoice {
   id: string;
@@ -406,7 +423,16 @@ export class ViewEventInteractionHandler {
     }
   }
 
-  public async handleDrop(taskId: string, date: Date): Promise<void> {
+  public async handleDrop(payload: ExternalCalendarDrop, date: Date): Promise<void> {
+    if (payload.type === 'basefull') {
+      await this.handleBaseFullDrop(payload.calendarId, payload.path, date);
+      return;
+    }
+
+    await this.handleTaskDrop(payload.taskId, date);
+  }
+
+  private async handleTaskDrop(taskId: string, date: Date): Promise<void> {
     try {
       if (!PluginState.getCache()) {
         throw new Error('Event cache not available');
@@ -433,6 +459,24 @@ export class ViewEventInteractionHandler {
       console.error('Failed to schedule task:', error);
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
       showNotice(t('ui.view.errors.taskScheduleFailed', { message }));
+    }
+  }
+
+  private async handleBaseFullDrop(calendarId: string, path: string, date: Date): Promise<void> {
+    try {
+      const provider = PluginState.getProviderRegistry().getInstance(calendarId);
+      if (!isBaseFullDropScheduler(provider)) {
+        throw new Error('Base Full calendar source not available.');
+      }
+
+      await provider.scheduleUndatedItem(path, date);
+      PluginState.getCache().syncCalendar(calendarId, await provider.getEvents());
+      showNotice('Base item scheduled.');
+      void this.ctx.refreshView();
+    } catch (error) {
+      console.error('Failed to schedule Base Full item:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      showNotice(`Failed to schedule Base item: ${message}`);
     }
   }
 }

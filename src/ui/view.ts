@@ -40,6 +40,7 @@ import { ViewSearchHandler } from './calendar/ViewSearchHandler';
 import { ViewTimelineHandler } from './calendar/ViewTimelineHandler';
 import { ViewUIHandler } from './calendar/ViewUIHandler';
 import { ViewEventInteractionHandler } from './calendar/ViewEventInteractionHandler';
+import { BaseFullUndatedPanel } from '../providers/basefull/BaseFullUndatedPanel';
 export { getCalendarColors } from './calendar/utils';
 
 export const FULL_CALENDAR_VIEW_TYPE = 'cortex-full-calendar-view';
@@ -72,6 +73,7 @@ export class CalendarView extends ItemView implements ViewContext {
   viewEnhancer: ViewEnhancer | null = null;
   private dateNavigation: DateNavigation | null = null;
   private throttledZoom: (event: WheelEvent) => void;
+  private baseFullUndatedPanel: BaseFullUndatedPanel | null = null;
 
   // Handlers
   private zoomHandler: ViewZoomHandler;
@@ -155,8 +157,14 @@ export class CalendarView extends ItemView implements ViewContext {
 
       const container = this.contentEl;
       container.empty();
+      this.baseFullUndatedPanel?.destroy();
+      this.baseFullUndatedPanel = null;
       const calendarShellEl = container.createDiv({ cls: 'ofc-calendar-shell' });
-      const calendarEl = calendarShellEl.createDiv();
+      if (!this.inSidebar) {
+        this.baseFullUndatedPanel = new BaseFullUndatedPanel(calendarShellEl.createDiv());
+        await this.baseFullUndatedPanel.refresh();
+      }
+      const calendarEl = calendarShellEl.createDiv({ cls: 'ofc-calendar-host' });
 
       this.registerDomEvent(
         calendarEl,
@@ -314,7 +322,7 @@ export class CalendarView extends ItemView implements ViewContext {
           }
           this.dateNavigation?.showViewContextMenu(mouseEvent, calendar);
         },
-        drop: (taskId, date) => this.interactionHandler.handleDrop(taskId, date)
+        drop: (payload, date) => this.interactionHandler.handleDrop(payload, date)
       });
 
       // Initialize shadow events if starting in timeline view
@@ -354,6 +362,8 @@ export class CalendarView extends ItemView implements ViewContext {
           void this.onOpen();
           return;
         }
+
+        void this.baseFullUndatedPanel?.refresh();
 
         this.viewEnhancer.updateSettings(PluginState.getSettings());
         const allCachedSources = PluginState.getCache().getAllEvents();
@@ -417,6 +427,8 @@ export class CalendarView extends ItemView implements ViewContext {
       this.fullCalendarView.destroy();
       this.fullCalendarView = null;
     }
+    this.baseFullUndatedPanel?.destroy();
+    this.baseFullUndatedPanel = null;
     if (this.dateNavigation) {
       this.dateNavigation.destroy();
       this.dateNavigation = null;
