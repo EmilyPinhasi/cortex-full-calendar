@@ -142,14 +142,18 @@ export class WorkspaceManager {
    * @returns A filtered array of OFCEventSource objects.
    */
   public filterCalendarSources(sources: OFCEventSource[]): OFCEventSource[] {
+    const hidden = new Set((this.settings.hiddenCalendarIds ?? []).map(String));
+    const afterHidden =
+      hidden.size === 0 ? sources : sources.filter(source => !hidden.has(String(source.id)));
+
     const workspace = this.getActiveWorkspace();
-    if (!workspace) return sources;
+    if (!workspace) return afterHidden;
 
     const selected = (workspace.visibleCalendars ?? []).map(String);
-    if (selected.length === 0) return sources;
+    if (selected.length === 0) return afterHidden;
 
     const selectedSet = new Set(selected);
-    const filtered = sources.filter(source => selectedSet.has(String(source.id)));
+    const filtered = afterHidden.filter(source => selectedSet.has(String(source.id)));
 
     if (filtered.length === 0 && selected.length > 0) {
       showNotice(

@@ -161,6 +161,7 @@ export interface FullCalendarSettings {
   defaultReminderMinutes: number;
   workspaces: WorkspaceSettings[];
   activeWorkspace: string | null; // Workspace ID, null means default view
+  hiddenCalendarIds?: string[]; // Calendar source IDs hidden via the on-page toggle menu
   showEventInStatusBar: boolean;
   highlightCurrentOrNextEvent: boolean;
 
@@ -214,6 +215,7 @@ export const DEFAULT_SETTINGS: FullCalendarSettings = {
   enableReminders: true,
   workspaces: [],
   activeWorkspace: null,
+  hiddenCalendarIds: [],
   showEventInStatusBar: false,
   highlightCurrentOrNextEvent: true,
 

@@ -233,7 +233,7 @@ export async function renderCalendar(
     return {
       mode: 'desktop',
       headerToolbar: {
-        left: 'workspace prev,today,navigate,next refresh search',
+        left: 'workspace calendars prev,today,navigate,next refresh search',
         center: 'title',
         right: `analysis ${fullDesktopViewGroup}`
       },
@@ -384,6 +384,12 @@ export async function renderCalendar(
       menu.addItem(item => {
         item.setTitle('Workspace').onClick(() => {
           void customButtons?.workspace?.click(ev);
+        });
+      });
+
+      menu.addItem(item => {
+        item.setTitle('Calendars').onClick(() => {
+          void customButtons?.calendars?.click(ev);
         });
       });
 
