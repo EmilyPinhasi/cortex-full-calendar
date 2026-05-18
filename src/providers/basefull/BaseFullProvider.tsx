@@ -76,6 +76,13 @@ function toComparableString(value: unknown): string | null {
   return null;
 }
 
+function toCalendarEventType(value: unknown): 'single' | 'recurring' | 'rrule' {
+  if (value === 'recurring' || value === 'rrule') {
+    return value;
+  }
+  return 'single';
+}
+
 function areFieldValuesEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a === null || b === null || a === undefined || b === undefined) return false;
@@ -291,7 +298,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     const rawEvent: Record<string, unknown> = {
       ...metadata,
       title: typeof metadata.title === 'string' ? metadata.title : file.basename,
-      type: typeof metadata.type === 'string' ? metadata.type : 'single',
+      type: toCalendarEventType(metadata.type),
       allDay: typeof metadata.allDay === 'boolean' ? metadata.allDay : true,
       date,
       completed
