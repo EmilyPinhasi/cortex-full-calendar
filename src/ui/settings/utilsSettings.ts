@@ -67,6 +67,7 @@ export function migrateAndSanitizeSettings(settings: unknown): {
     defaultReminderMinutes: raw.defaultReminderMinutes ?? 10,
     workspaces: raw.workspaces || [],
     activeWorkspace: raw.activeWorkspace ?? null,
+    hiddenCalendarIds: (raw as Partial<FullCalendarSettings>).hiddenCalendarIds ?? [],
     showEventInStatusBar: (raw as Partial<FullCalendarSettings>).showEventInStatusBar ?? false,
     highlightCurrentOrNextEvent:
       (raw as Partial<FullCalendarSettings>).highlightCurrentOrNextEvent ?? true,
