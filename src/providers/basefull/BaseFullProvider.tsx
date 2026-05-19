@@ -120,9 +120,25 @@ function toDateString(value: unknown): string | null {
 }
 
 function toComparableString(value: unknown): string | null {
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') return value.trim() || null;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    const values = value
+      .map(item => toComparableString(item))
+      .filter((item): item is string => item !== null);
+    return values.length > 0 ? values.join(', ') : null;
+  }
   return null;
+}
+
+function metadataCompletedValue(value: unknown): boolean | null {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.trim().length > 0;
+  return value === null || value === undefined ? null : Boolean(value);
+}
+
+function statusMatches(value: string | null, expected: string): boolean {
+  return value?.trim().toLowerCase() === expected.trim().toLowerCase();
 }
 
 function toCalendarEventType(value: unknown): 'single' | 'recurring' | 'rrule' {
@@ -642,16 +658,26 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
           return null;
         }
 
-        const status =
+        const rawStatus =
           this.config.statusProperty && metadata[this.config.statusProperty] !== undefined
             ? toComparableString(metadata[this.config.statusProperty])
             : toComparableString(metadata.status);
+        const completed =
+          statusMatches(rawStatus, this.completeStatusValue) ||
+          metadataCompletedValue(metadata.completed) === true;
+        const status =
+          rawStatus ||
+          (metadataCompletedValue(metadata.completed) !== null
+            ? completed
+              ? this.completeStatusValue
+              : this.incompleteStatusValue
+            : null);
 
         return {
           path: file.path,
           title: typeof metadata.title === 'string' ? metadata.title : file.basename,
           status,
-          completed: status === this.completeStatusValue,
+          completed,
           due: toDateString(metadata.due)
         };
       })
