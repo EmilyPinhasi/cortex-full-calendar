@@ -237,13 +237,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   }
 
   private getDateFromMetadata(metadata: Record<string, unknown>): string | null {
-    return (
-      toDateString(metadata[this.dateProperty]) ||
-      toDateString(metadata.date) ||
-      toDateString(metadata.start) ||
-      toDateString(metadata.startTime) ||
-      toDateString(metadata.due)
-    );
+    return toDateString(metadata[this.dateProperty]);
   }
 
   private isBasesEnabled(): boolean {

@@ -1,7 +1,10 @@
 import { TFile } from 'obsidian';
 import { BaseFullProvider } from './BaseFullProvider';
 
-function makeProvider(frontmatter: Record<string, unknown>): BaseFullProvider {
+function makeProvider(
+  frontmatter: Record<string, unknown>,
+  dateProperty = 'date'
+): BaseFullProvider {
   return new BaseFullProvider(
     {
       type: 'basefull',
@@ -9,7 +12,7 @@ function makeProvider(frontmatter: Record<string, unknown>): BaseFullProvider {
       color: '#3788d8',
       basePath: 'test.base',
       createDirectory: 'inbox',
-      dateProperty: 'date'
+      dateProperty
     },
     {
       app: {
@@ -50,5 +53,44 @@ describe('BaseFullProvider', () => {
       date: '2026-05-18',
       allDay: true
     });
+  });
+
+  it('uses the configured date property without falling back to legacy date fields', () => {
+    const provider = makeProvider(
+      {
+        title: 'Current Date',
+        date: '2026-05-18',
+        scheduled: '2026-05-20'
+      },
+      'scheduled'
+    );
+
+    const result = (
+      provider as unknown as {
+        getEventFromFile(file: TFile): [{ date: string }, unknown] | null;
+      }
+    ).getEventFromFile(makeFile('current.md'));
+
+    expect(result?.[0]).toMatchObject({
+      date: '2026-05-20'
+    });
+  });
+
+  it('treats files without the configured date property as undated', () => {
+    const provider = makeProvider(
+      {
+        title: 'Old Date',
+        date: '2026-05-18'
+      },
+      'scheduled'
+    );
+
+    const result = (
+      provider as unknown as {
+        getEventFromFile(file: TFile): [{ date: string }, unknown] | null;
+      }
+    ).getEventFromFile(makeFile('old.md'));
+
+    expect(result).toBeNull();
   });
 });
