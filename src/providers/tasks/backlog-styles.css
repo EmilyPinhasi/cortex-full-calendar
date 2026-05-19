@@ -122,11 +122,31 @@
   color: var(--text-muted);
 }
 
-.tasks-backlog-location {
+.tasks-backlog-meta {
+  align-items: center;
+  display: flex;
+  gap: 6px;
   font-size: 0.8em;
   color: var(--text-faint);
-  font-family: var(--font-monospace);
   align-self: flex-end;
+  min-width: 0;
+}
+
+.tasks-backlog-status,
+.tasks-backlog-due {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tasks-backlog-due {
+  color: var(--text-muted);
+}
+
+.tasks-backlog-due::before {
+  color: var(--text-faint);
+  content: "|";
+  margin-right: 6px;
 }
 
 .tasks-backlog-pagination {

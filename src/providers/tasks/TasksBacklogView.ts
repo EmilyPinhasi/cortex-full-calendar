@@ -22,6 +22,13 @@ import './backlog-styles.css';
 
 export const TASKS_BACKLOG_VIEW_TYPE = 'tasks-backlog-view';
 
+function formatTaskDate(date: Date | null): string | null {
+  if (!date || Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString().slice(0, 10);
+}
+
 export class TasksBacklogView extends ItemView {
   private plugin: FullCalendarPlugin;
   private tasksProvider: TasksPluginProvider | null = null;
@@ -363,11 +370,13 @@ export class TasksBacklogView extends ItemView {
         title.addClass('tasks-backlog-done');
       }
 
-      // Task location info
-      taskItem.createDiv({
-        text: `${task.location.path}:${task.location.lineNumber}`,
-        cls: 'tasks-backlog-location'
-      });
+      const meta = taskItem.createDiv({ cls: 'tasks-backlog-meta' });
+      meta.createSpan({ text: task.status, cls: 'tasks-backlog-status' });
+
+      const dueDate = formatTaskDate(task.dueDate);
+      if (dueDate) {
+        meta.createSpan({ text: `Due ${dueDate}`, cls: 'tasks-backlog-due' });
+      }
     }
 
     // Set up FullCalendar's Draggable API for the entire task list

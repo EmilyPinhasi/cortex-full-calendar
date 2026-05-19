@@ -642,6 +642,8 @@ export class TasksPluginProvider implements CalendarProvider<TasksProviderConfig
         .map(t => ({
           title: t.title,
           isDone: t.isDone,
+          status: t.isDone ? 'Done' : 'Todo',
+          dueDate: t.dueDate,
           location: {
             path: t.filePath,
             // FIX: The task ID used by the backlog MUST match the canonical 0-indexed ID.

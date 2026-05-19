@@ -1,6 +1,8 @@
 export interface ParsedUndatedTask {
   title: string;
   isDone: boolean;
+  status: string;
+  dueDate: Date | null;
   location: {
     path: string;
     lineNumber: number;
