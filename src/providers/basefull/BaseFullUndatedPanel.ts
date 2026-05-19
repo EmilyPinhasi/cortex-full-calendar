@@ -1,6 +1,6 @@
 import { Draggable } from '@fullcalendar/interaction';
 import { PluginState } from '../../core/PluginState';
-import type { CalendarInfo } from '../../types';
+import { PLUGIN_SLUG, type CalendarInfo } from '../../types';
 import type { BaseFullProvider, BaseFullUndatedItem } from './BaseFullProvider';
 import './undated-panel.css';
 
@@ -167,16 +167,29 @@ export class BaseFullUndatedPanel {
       }
 
       for (const item of group.items) {
-        const itemEl = groupEl.createDiv({
-          cls: 'basefull-undated-item',
+        const itemWrapperEl = groupEl.createDiv({ cls: 'tree-item nav-file basefull-undated-item-wrapper' });
+        const itemEl = itemWrapperEl.createEl('a', {
+          cls: 'tree-item-self nav-file-title internal-link basefull-undated-item',
           attr: {
+            href: item.path,
             draggable: 'true',
+            'data-href': item.path,
             'data-basefull-calendar-id': group.calendarId,
             'data-basefull-path': item.path
           }
         });
-        itemEl.createDiv({ cls: 'basefull-undated-item-title', text: item.title });
-        itemEl.createDiv({ cls: 'basefull-undated-item-path', text: item.path });
+        itemEl.createSpan({
+          cls: 'tree-item-inner nav-file-title-content basefull-undated-item-title',
+          text: item.title
+        });
+        itemEl.createSpan({ cls: 'basefull-undated-item-path', text: item.path });
+        itemEl.addEventListener('click', event => {
+          event.preventDefault();
+          void PluginState.getPlugin().app.workspace.openLinkText(item.path, item.path);
+        });
+        itemEl.addEventListener('mouseenter', event => {
+          this.triggerLinkHover(event, item.path, itemEl);
+        });
       }
     }
 
@@ -184,5 +197,20 @@ export class BaseFullUndatedPanel {
     this.draggable = new Draggable(listEl, {
       itemSelector: '.basefull-undated-item'
     });
+  }
+
+  private triggerLinkHover(event: MouseEvent, path: string, targetEl: HTMLElement): void {
+    try {
+      PluginState.getPlugin().app.workspace.trigger('hover-link', {
+        event,
+        source: PLUGIN_SLUG,
+        hoverParent: this.containerEl,
+        targetEl,
+        linktext: path,
+        sourcePath: path
+      });
+    } catch {
+      // Hover previews are optional and depend on Obsidian's Page Preview plugin.
+    }
   }
 }
