@@ -152,6 +152,30 @@ describe('baseFilter', () => {
     );
   });
 
+  it('supports Bases link literals in containsAny filters', () => {
+    const file = makeFile('20-core/home/item.md');
+
+    expect(
+      evaluateBaseFilterString(
+        'subprojects.containsAny(link("&&סובב בית"))',
+        file,
+        makeContext({
+          subprojects: ['[[&&סובב בית]]']
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      evaluateBaseFilterString(
+        'subprojects.containsAny(link("Projects/Home"))',
+        file,
+        makeContext({
+          subprojects: [{ link: 'Projects/Home' }]
+        })
+      )
+    ).toBe(true);
+  });
+
   it('does not pass files for unsupported filter strings', () => {
     expect(evaluateBaseFilterString('unsupported.filter()', makeFile('20-core/item.md'), makeContext())).toBe(
       false

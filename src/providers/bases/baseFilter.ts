@@ -122,6 +122,12 @@ function getFileProperty(file: TFile, property: string): unknown {
 
 function parseLiteral(value: string): unknown {
   const trimmed = value.trim();
+  const linkMatch = trimmed.match(/^link\((.*)\)$/);
+  if (linkMatch) {
+    const [target] = splitArgs(linkMatch[1]);
+    return target ? normalizeLinkTarget(stripQuotes(target)) : '';
+  }
+
   const stripped = stripQuotes(trimmed);
   if (trimmed === 'today()') return new Date().toISOString().slice(0, 10);
   if (trimmed === 'true') return true;
@@ -130,6 +136,13 @@ function parseLiteral(value: string): unknown {
   if (trimmed === 'undefined') return undefined;
   if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
   return stripped;
+}
+
+function normalizeLinkTarget(value: string): string {
+  const trimmed = value.trim();
+  const wikiLinkMatch = trimmed.match(/^\[\[([^\]]+)\]\]$/);
+  const target = wikiLinkMatch ? wikiLinkMatch[1] : trimmed;
+  return normalizePath(target.split('|')[0].split('#')[0].split('^')[0]);
 }
 
 function normalizeComparableValue(value: unknown): unknown {
@@ -171,17 +184,26 @@ function isEmptyValue(value: unknown): boolean {
 function toSearchableString(value: unknown): string | null {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  if (value && typeof value === 'object' && 'path' in value) {
-    const path = (value as { path?: unknown }).path;
-    return typeof path === 'string' ? path : null;
+  if (value && typeof value === 'object') {
+    const record = value as { link?: unknown; path?: unknown };
+    if (typeof record.link === 'string') return record.link;
+    if (typeof record.path === 'string') return record.path;
   }
   return null;
+}
+
+function linksMatch(left: unknown, right: unknown): boolean {
+  const leftString = toSearchableString(left);
+  const rightString = toSearchableString(right);
+  if (leftString === null || rightString === null) return false;
+  return normalizeLinkTarget(leftString) === normalizeLinkTarget(rightString);
 }
 
 function valueContains(left: unknown, right: unknown): boolean {
   if (Array.isArray(left)) {
     return (left as unknown[]).some(item => {
       const itemValue = toSearchableString(item) ?? item;
+      if (linksMatch(itemValue, right)) return true;
       if (compareValues(itemValue, '==', right)) return true;
       if (typeof itemValue === 'string' && typeof right === 'string') {
         return itemValue === `#${right}` || `#${itemValue}` === right;
@@ -193,6 +215,7 @@ function valueContains(left: unknown, right: unknown): boolean {
   const leftString = toSearchableString(left);
   const rightString = toSearchableString(right);
   if (leftString !== null && rightString !== null) {
+    if (linksMatch(leftString, rightString)) return true;
     return leftString.includes(rightString);
   }
 
