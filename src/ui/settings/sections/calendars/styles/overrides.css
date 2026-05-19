@@ -4,6 +4,8 @@
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
+    background: var(--background-primary);
+    color: var(--text-normal);
 }
 
 .ofc-calendar-host {
@@ -35,12 +37,18 @@
 
 .fc {
     height: 100%;
+    color: var(--text-normal);
+    font-family: inherit;
+    --fc-small-font-size: var(--font-ui-smaller);
+
     --fc-button-text-color: var(--text-normal);
     --fc-button-bg-color: var(--interactive-normal);
-    --fc-button-border-color: var(--interactive-normal);
-
+    --fc-button-border-color: var(--background-modifier-border);
     --fc-button-hover-bg-color: var(--interactive-hover);
-    --fc-button-hover-border-color: var(--interactive-hover);
+    --fc-button-hover-border-color: var(
+        --background-modifier-border-hover,
+        var(--background-modifier-border)
+    );
 
     --fc-button-active-border-color: var(--interactive-accent);
     --fc-button-active-bg-color: var(--interactive-accent);
@@ -49,43 +57,71 @@
     --fc-event-bg-color: var(--interactive-accent);
     --fc-event-text-color: var(--text-on-accent);
 
-    --fc-list-event-hover-bg-color: var(--background-secondary);
-    --fc-neutral-bg-color: var(--background-primary-alt);
-
     --fc-page-bg-color: var(--background-primary);
     --fc-border-color: var(--background-modifier-border);
+    --fc-neutral-bg-color: var(--background-secondary);
+    --fc-neutral-text-color: var(--text-muted);
+    --fc-list-event-hover-bg-color: var(--background-modifier-hover);
 
     --fc-now-indicator-color: var(--text-error-hover);
 
-    --fc-more-link-bg-color: var(--background-primary-alt);
+    --fc-more-link-bg-color: var(--background-modifier-hover);
     --fc-more-link-text-color: var(--text-accent);
 
-    --fc-today-bg-color: var(--background-modifier-cover);
-
-    --fc-neutral-text-color: var(--text-muted);
-    --fc-neutral-bg-color: var(--interactive-normal);
+    --fc-today-bg-color: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 
     --fc-highlight-color: var(--text-highlight-bg);
     --fc-bg-event-color: var(--background-modifier-success);
-    --fc-non-business-color: var(--background-modifier-box-shadow);
+    --fc-non-business-color: color-mix(in srgb, var(--background-secondary) 70%, transparent);
 }
 
 .fc .fc-bg-event {
     pointer-events: auto;
 }
 
-.fc-button-active {
-    color: var(--text-on-accent);
+.fc a {
+    color: inherit;
+}
+
+.fc .fc-scrollgrid,
+.ofc-calendar-shell .fc-theme-standard td,
+.ofc-calendar-shell .fc-theme-standard th {
+    border-color: var(--background-modifier-border);
+}
+
+.fc .fc-col-header-cell,
+.fc .fc-scrollgrid-section-header > *,
+.fc .fc-list-day-cushion,
+.fc .fc-timegrid-axis,
+.fc .fc-timeline-header,
+.fc .fc-datagrid-header {
+    background: var(--background-secondary);
+    color: var(--text-muted);
 }
 
 .fc .fc-button {
-    border: 0px solid transparent;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--button-radius, var(--radius-s));
+    box-shadow: none;
+    font-size: var(--font-ui-small);
+    font-weight: var(--font-medium);
     line-height: 1;
     padding: var(--size-4-1) var(--size-4-3);
 }
 
+.fc .fc-button:hover,
+.fc .fc-button:focus-visible {
+    box-shadow: none;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    color: var(--text-on-accent);
+}
+
 .fc .fc-toolbar.fc-header-toolbar {
     flex-wrap: nowrap;
+    margin-bottom: var(--size-4-3);
 }
 
 .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk {
@@ -93,9 +129,105 @@
 }
 
 .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-title {
+    color: var(--text-normal);
+    font-size: var(--font-ui-large);
+    font-weight: var(--font-semibold);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.fc .fc-daygrid-day,
+.fc .fc-timegrid-col,
+.fc .fc-list,
+.fc .fc-timeline-slot,
+.fc .fc-resource-timeline .fc-datagrid-cell {
+    background: var(--background-primary);
+}
+
+.fc .fc-day-other {
+    background: var(--background-primary-alt);
+}
+
+.fc .fc-daygrid-day-number,
+.fc .fc-col-header-cell-cushion,
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number,
+.fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+    color: var(--text-accent);
+    font-weight: var(--font-semibold);
+}
+
+.fc .fc-timegrid-slot-label,
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-list-event-time,
+.fc .fc-list-event-graphic {
+    color: var(--text-faint);
+}
+
+.fc .fc-timegrid-now-indicator-line {
+    border-color: var(--text-error-hover);
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+    border-color: var(--text-error-hover);
+}
+
+.fc .fc-popover {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    background: var(--background-primary);
+    box-shadow: var(--shadow-s, 0 2px 8px rgba(0, 0, 0, 0.18));
+    color: var(--text-normal);
+    overflow: hidden;
+}
+
+.fc .fc-popover-header {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    padding: var(--size-4-2) var(--size-4-3);
+}
+
+.fc .fc-more-link {
+    border-radius: var(--radius-s);
+    color: var(--text-accent);
+    padding: 0 var(--size-2-2);
+    text-decoration: none;
+}
+
+.fc .fc-more-link:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-accent-hover);
+    text-decoration: none;
+}
+
+.fc .fc-event {
+    border-radius: var(--radius-s);
+    box-shadow: none;
+    font-size: var(--font-ui-smaller);
+}
+
+.fc .fc-event:hover,
+.fc .fc-list-event:hover td {
+    filter: brightness(1.05);
+}
+
+.fc .fc-daygrid-dot-event {
+    color: var(--text-normal);
+}
+
+.fc .fc-list {
+    border-color: var(--background-modifier-border);
+}
+
+.fc .fc-list-empty {
+    background: var(--background-primary);
+    color: var(--text-muted);
 }
 
 .fc .ofc-toolbar-search-host {
