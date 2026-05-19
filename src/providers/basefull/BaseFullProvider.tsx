@@ -48,6 +48,9 @@ export interface BaseFullProviderConfig {
 export interface BaseFullUndatedItem {
   path: string;
   title: string;
+  status: string | null;
+  completed: boolean;
+  due: string | null;
 }
 
 const DEFAULT_DATE_PROPERTY = 'date';
@@ -639,9 +642,17 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
           return null;
         }
 
+        const status =
+          this.config.statusProperty && metadata[this.config.statusProperty] !== undefined
+            ? toComparableString(metadata[this.config.statusProperty])
+            : toComparableString(metadata.status);
+
         return {
           path: file.path,
-          title: typeof metadata.title === 'string' ? metadata.title : file.basename
+          title: typeof metadata.title === 'string' ? metadata.title : file.basename,
+          status,
+          completed: status === this.completeStatusValue,
+          due: toDateString(metadata.due)
         };
       })
       .filter((item): item is BaseFullUndatedItem => item !== null);

@@ -179,11 +179,39 @@
     font-weight: var(--nav-item-weight-hover, var(--nav-item-weight, 400));
 }
 
-.basefull-undated-item-path {
+.basefull-undated-item-meta {
+    align-items: center;
     color: var(--text-faint);
+    display: flex;
     font-size: var(--font-ui-smaller);
+    gap: 6px;
     line-height: 1.25;
-    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.basefull-undated-item-checkbox {
+    flex: 0 0 auto;
+    height: 12px;
+    margin: 0;
+    width: 12px;
+}
+
+.basefull-undated-item-status,
+.basefull-undated-item-due {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.basefull-undated-item-due {
+    color: var(--text-muted);
+}
+
+.basefull-undated-item-due::before {
+    color: var(--text-faint);
+    content: "|";
+    margin-right: 6px;
 }
 
 .is-phone .basefull-undated-panel {

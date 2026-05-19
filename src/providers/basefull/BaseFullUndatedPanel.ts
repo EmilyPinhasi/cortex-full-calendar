@@ -24,6 +24,10 @@ function isBaseFullUndatedProvider(provider: unknown): provider is BaseFullUndat
   );
 }
 
+function formatUndatedItemStatus(item: BaseFullUndatedItem): string {
+  return item.status || 'No status';
+}
+
 export class BaseFullUndatedPanel {
   private collapsed = false;
   private collapsedCalendarIds = new Set<string>();
@@ -182,7 +186,19 @@ export class BaseFullUndatedPanel {
           cls: 'tree-item-inner nav-file-title-content basefull-undated-item-title',
           text: item.title
         });
-        itemEl.createSpan({ cls: 'basefull-undated-item-path', text: item.path });
+        const metaEl = itemEl.createSpan({ cls: 'basefull-undated-item-meta' });
+        const checkboxEl = metaEl.createEl('input', {
+          cls: 'basefull-undated-item-checkbox ofc-checkbox-black',
+          attr: { type: 'checkbox', disabled: 'true' }
+        });
+        checkboxEl.checked = item.completed;
+        metaEl.createSpan({
+          cls: 'basefull-undated-item-status',
+          text: formatUndatedItemStatus(item)
+        });
+        if (item.due) {
+          metaEl.createSpan({ cls: 'basefull-undated-item-due', text: `Due ${item.due}` });
+        }
         itemEl.addEventListener('click', event => {
           event.preventDefault();
           void PluginState.getPlugin().app.workspace.openLinkText(item.path, item.path);
