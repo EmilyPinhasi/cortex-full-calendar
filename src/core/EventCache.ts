@@ -99,7 +99,6 @@ export default class EventCache {
       void this.onSettingsChanged();
     };
     emitter.on('cortex-full-calendar:view-config-changed', this.viewConfigListener);
-    emitter.on('cortex-full-calendar:sources-changed', this.viewConfigListener);
   }
 
   public stopListening(): void {
@@ -108,7 +107,6 @@ export default class EventCache {
         off: (name: string, cb: () => void) => void;
       };
       emitter.off('cortex-full-calendar:view-config-changed', this.viewConfigListener);
-      emitter.off('cortex-full-calendar:sources-changed', this.viewConfigListener);
       this.viewConfigListener = null;
       this.workspaceEmitter = null;
     }
