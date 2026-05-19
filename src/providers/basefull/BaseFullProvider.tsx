@@ -277,99 +277,30 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     }
   }
 
-  private async getFilteredFiles(caller = 'unknown'): Promise<TFile[]> {
+  private async getFilteredFiles(): Promise<TFile[]> {
     const baseData = await this.getBaseData();
-    if (!baseData) {
-      console.warn(
-        '[basefull] getFilteredFiles: no baseData',
-        caller,
-        this.config.basePath
-      );
-      return [];
-    }
+    if (!baseData) return [];
 
     const baseFilter = combineBaseFilters(baseData, this.config.baseViewIndex);
-    const allFiles = this.plugin.app.vault.getFiles();
-    const result = allFiles.filter(file => {
+    return this.plugin.app.vault.getFiles().filter(file => {
       if (file.extension !== 'md') return false;
       if (!baseFilter) return true;
       return this.evaluateFilter(baseFilter, file);
     });
-    console.warn('[basefull] getFilteredFiles', {
-      caller,
-      basePath: this.config.basePath,
-      baseViewIndex: this.config.baseViewIndex,
-      hasFilter: !!baseFilter,
-      filter: baseFilter,
-      totalMdFiles: allFiles.filter(f => f.extension === 'md').length,
-      passedFiles: result.length,
-      firstFew: result.slice(0, 5).map(f => f.path)
-    });
-    return result;
   }
 
   async getEvents(_range?: {
     start: Date;
     end: Date;
   }): Promise<[OFCEvent, EventLocation | null][]> {
-    console.warn('[basefull] getEvents:start', this.config.name);
     const events: [OFCEvent, EventLocation | null][] = [];
-    const filtered = await this.getFilteredFiles('getEvents');
-    let rejectedNoMetadata = 0;
-    let rejectedNoDate = 0;
-    let rejectedValidation = 0;
-    for (const file of filtered) {
-      const result = this.getEventFromFileDebug(file);
-      if (result.event) {
-        events.push(result.event);
-      } else {
-        if (result.reason === 'no-metadata') rejectedNoMetadata++;
-        else if (result.reason === 'no-date') rejectedNoDate++;
-        else if (result.reason === 'validation') rejectedValidation++;
+    for (const file of await this.getFilteredFiles()) {
+      const eventData = this.getEventFromFile(file);
+      if (eventData) {
+        events.push(eventData);
       }
     }
-    console.warn('[basefull]', this.config.name, {
-      basePath: this.config.basePath,
-      dateProperty: this.dateProperty,
-      filteredFiles: filtered.length,
-      events: events.length,
-      rejectedNoMetadata,
-      rejectedNoDate,
-      rejectedValidation
-    });
     return events;
-  }
-
-  private getEventFromFileDebug(file: TFile): {
-    event: [OFCEvent, EventLocation | null] | null;
-    reason?: 'no-metadata' | 'no-date' | 'validation';
-  } {
-    const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
-    if (!metadata) {
-      console.warn('[basefull] no-metadata', file.path);
-      return { event: null, reason: 'no-metadata' };
-    }
-
-    const date = this.getDateFromMetadata(metadata);
-    if (!date) {
-      const dbg: Record<string, unknown> = {
-        configuredField: this.dateProperty,
-        configuredFieldValue: metadata[this.dateProperty],
-        date: metadata.date,
-        start: metadata.start,
-        startTime: metadata.startTime,
-        due: metadata.due
-      };
-      console.warn('[basefull] no-date', file.path, JSON.stringify(dbg));
-      return { event: null, reason: 'no-date' };
-    }
-
-    const event = this.getEventFromFile(file);
-    if (!event) {
-      console.warn('[basefull] validation-failed', file.path, JSON.stringify({ date, metadata }));
-      return { event: null, reason: 'validation' };
-    }
-    return { event };
   }
 
   async getEventsInFile(file: TFile): Promise<[OFCEvent, EventLocation | null][]> {
@@ -383,8 +314,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   }
 
   async getUndatedItems(): Promise<BaseFullUndatedItem[]> {
-    console.warn('[basefull] getUndatedItems:start', this.config.name);
-    const files = await this.getFilteredFiles('getUndatedItems');
+    const files = await this.getFilteredFiles();
     return files
       .map(file => {
         const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};

@@ -139,13 +139,6 @@ export default class FullCalendarPlugin extends Plugin {
     PluginState.getProviderRegistry().setCache(PluginState.getCache());
     PluginState.getProviderRegistry().listenForSourceChanges();
 
-    // TEMP DEBUG: expose state on the plugin for console inspection.
-    (this as unknown as { _debugState: unknown })._debugState = {
-      cache: PluginState.getCache(),
-      registry: PluginState.getProviderRegistry(),
-      settings: PluginState.getSettings()
-    };
-
     PluginState.getCache().reset();
     PluginState.getCache().listenForSettingsChanges(this.app.workspace);
 
