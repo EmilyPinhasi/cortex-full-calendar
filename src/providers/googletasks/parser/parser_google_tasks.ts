@@ -10,6 +10,7 @@ export interface GoogleTaskLike {
   completed?: string;
   deleted?: boolean;
   hidden?: boolean;
+  selfLink?: string;
   webViewLink?: string;
   etag?: string;
 }

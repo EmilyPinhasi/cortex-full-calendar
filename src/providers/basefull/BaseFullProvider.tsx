@@ -6,10 +6,21 @@ import { EventHandle, FCReactComponent } from '../typesProvider';
 import { CalendarInfo, EventLocation, OFCEvent, validateEvent } from '../../types';
 import FullCalendarPlugin from '../../main';
 import { ObsidianInterface } from '../../ObsidianAdapter';
+import { PluginState } from '../../core/PluginState';
 import { modifyFrontmatterString } from '../fullnote/frontmatter';
 import { BaseFullConfigComponent, BaseFullConfigComponentProps } from './BaseFullConfigComponent';
 import { buildNoteFromTemplate } from '../../utils/noteTemplate';
 import { BaseFile, BaseFilter, combineBaseFilters, evaluateBaseFilter } from '../bases/baseFilter';
+import { GoogleAuthManager } from '../google/auth/GoogleAuthManager';
+import { makeAuthenticatedRequest } from '../google/auth/request';
+import { GoogleTasksProviderConfig } from '../googletasks/typesGoogleTasks';
+import {
+  GoogleTaskLike,
+  fromGoogleTask,
+  toGoogleTaskInsert,
+  toGoogleTaskPatch
+} from '../googletasks/parser/parser_google_tasks';
+import { fetchGoogleTasks } from '../googletasks/auth/api';
 
 type ExecFile = (
   file: string,
@@ -45,6 +56,10 @@ const DEFAULT_INCOMPLETE_STATUS = 'todo';
 const SUFFIX_PATTERN = '-_-_-';
 const CLI_QUERY_TIMEOUT_MS = 10_000;
 const CLI_RETRY_DELAY_MS = 30_000;
+const GOOGLE_TASKS_LIST_PROPERTY = 'gTasksList';
+const GOOGLE_TASK_URL_PROPERTY = 'gTaskUrl';
+const GOOGLE_TASK_ID_PROPERTY = 'gTaskId';
+const GOOGLE_TASK_SYNC_TAG = '#sync';
 
 function sanitizeTitleForFilename(title: string): string {
   return title
@@ -226,6 +241,17 @@ function getChangedEventFields(
   return changed;
 }
 
+function getStringMetadata(metadata: Record<string, unknown>, property: string): string | null {
+  const value = metadata[property];
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function getSingleEventDate(event: OFCEvent): string | null {
+  if (event.type === 'single') return event.date;
+  if (event.type === 'rrule') return event.startDate;
+  return event.startRecur || null;
+}
+
 export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig>, SyncKeyProvider {
   static readonly type = 'basefull';
   static readonly displayName = 'Base Full';
@@ -241,8 +267,10 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   private config: BaseFullProviderConfig;
   private plugin: FullCalendarPlugin;
   private app: ObsidianInterface;
+  private authManager: GoogleAuthManager;
   private cliQueryPromise: Promise<TFile[]> | null = null;
   private cliDisabledUntil = 0;
+  private syncedGoogleTaskIds = new Set<string>();
 
   constructor(config: BaseFullProviderConfig, plugin: FullCalendarPlugin, app?: ObsidianInterface) {
     if (!app) {
@@ -251,6 +279,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     this.config = config;
     this.plugin = plugin;
     this.app = app;
+    this.authManager = new GoogleAuthManager(plugin);
   }
 
   getCapabilities(): CalendarProviderCapabilities {
@@ -389,6 +418,180 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     return cliFiles || this.getParserFilteredFiles(baseData);
   }
 
+  private getGoogleTasksSourceByName(listName: string): (GoogleTasksProviderConfig & CalendarInfo) | null {
+    const normalizedListName = listName.trim().toLowerCase();
+    return (
+      PluginState.getSettings().calendarSources.find(
+        (source): source is GoogleTasksProviderConfig & CalendarInfo =>
+          source.type === 'googletasks' && source.name.trim().toLowerCase() === normalizedListName
+      ) || null
+    );
+  }
+
+  private async getGoogleTasksToken(source: GoogleTasksProviderConfig): Promise<string | null> {
+    return this.authManager.getTokenForSource({
+      type: 'google',
+      id: source.id,
+      name: source.name,
+      calendarId: 'primary',
+      googleAccountId: source.googleAccountId,
+      color: ''
+    });
+  }
+
+  private getObsidianNoteUrl(file: TFile): string {
+    const vault = (this.plugin.app.vault as unknown as { getName?: () => string }).getName?.();
+    if (!vault) {
+      return `[[${file.path}]]`;
+    }
+
+    const params = new URLSearchParams({ vault, file: file.path });
+    return `obsidian://open?${params.toString()}`;
+  }
+
+  private buildGoogleTaskNotes(event: OFCEvent, file: TFile): string {
+    const existingDescription = event.description?.trim();
+    const noteUrl = this.getObsidianNoteUrl(file);
+    const parts = [GOOGLE_TASK_SYNC_TAG, `Obsidian: ${noteUrl}`];
+    if (existingDescription && !existingDescription.includes(GOOGLE_TASK_SYNC_TAG)) {
+      parts.push('', existingDescription);
+    } else if (existingDescription) {
+      parts.push('', existingDescription);
+    }
+    return Array.from(new Set(parts)).join('\n');
+  }
+
+  private async writeGoogleTaskLinkMetadata(
+    file: TFile,
+    task: GoogleTaskLike
+  ): Promise<void> {
+    const taskUrl = task.webViewLink || task.selfLink;
+    const modifications: Record<string, unknown> = {
+      [GOOGLE_TASK_ID_PROPERTY]: task.id
+    };
+    if (taskUrl) {
+      modifications[GOOGLE_TASK_URL_PROPERTY] = taskUrl;
+    }
+
+    await this.app.rewrite(file, page => modifyFrontmatterString(page, modifications));
+  }
+
+  private async syncBaseEventToGoogle(
+    file: TFile,
+    metadata: Record<string, unknown>,
+    event: OFCEvent
+  ): Promise<void> {
+    const listName = getStringMetadata(metadata, GOOGLE_TASKS_LIST_PROPERTY);
+    if (!listName) return;
+
+    const source = this.getGoogleTasksSourceByName(listName);
+    if (!source) {
+      console.warn(`Base Full: Google Tasks list "${listName}" is not configured as a source.`);
+      return;
+    }
+
+    const token = await this.getGoogleTasksToken(source);
+    if (!token) return;
+
+    const date = getSingleEventDate(event);
+    if (!date) return;
+
+    const singleEvent = {
+      ...event,
+      type: 'single' as const,
+      allDay: true as const,
+      date,
+      endDate: null,
+      description: this.buildGoogleTaskNotes(event, file)
+    };
+    const existingTaskId = getStringMetadata(metadata, GOOGLE_TASK_ID_PROPERTY);
+    const taskUrl = `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(
+      source.taskListId
+    )}/tasks${existingTaskId ? `/${encodeURIComponent(existingTaskId)}` : ''}`;
+
+    try {
+      const task = await makeAuthenticatedRequest<GoogleTaskLike>(
+        token,
+        taskUrl,
+        existingTaskId ? 'PATCH' : 'POST',
+        existingTaskId ? toGoogleTaskPatch(singleEvent) : toGoogleTaskInsert(singleEvent)
+      );
+      this.syncedGoogleTaskIds.add(task.id);
+
+      const currentTaskUrl = getStringMetadata(metadata, GOOGLE_TASK_URL_PROPERTY);
+      if (task.id !== existingTaskId || (task.webViewLink || task.selfLink) !== currentTaskUrl) {
+        await this.writeGoogleTaskLinkMetadata(file, task);
+      }
+    } catch (error) {
+      console.error(`Base Full: failed to sync "${file.path}" to Google Tasks.`, error);
+    }
+  }
+
+  private async createBaseNoteFromGoogleTask(
+    source: GoogleTasksProviderConfig & CalendarInfo,
+    task: GoogleTaskLike
+  ): Promise<TFile | null> {
+    if (!task.id || !task.notes?.includes(GOOGLE_TASK_SYNC_TAG)) {
+      return null;
+    }
+    if (this.syncedGoogleTaskIds.has(task.id)) {
+      return null;
+    }
+
+    const existing = this.plugin.app.vault.getFiles().find(file => {
+      const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};
+      return getStringMetadata(metadata, GOOGLE_TASK_ID_PROPERTY) === task.id;
+    });
+    if (existing) {
+      this.syncedGoogleTaskIds.add(task.id);
+      return null;
+    }
+
+    const event = fromGoogleTask(task);
+    const title = task.title || event?.title || 'Untitled task';
+    const date = event?.type === 'single' ? event.date : null;
+    const baseFilename = `${date ? `${date} ` : ''}${sanitizeTitleForFilename(title)}`;
+    const path = findUniquePath(this.app, this.config.createDirectory, baseFilename);
+    const frontmatter = this.mapEventFieldsToFrontmatter({
+      ...(event || {
+        type: 'single',
+        title,
+        allDay: true,
+        completed: task.status === 'completed' ? task.completed || DateTime.now().toISO() : false
+      }),
+      [GOOGLE_TASKS_LIST_PROPERTY]: source.name,
+      [GOOGLE_TASK_ID_PROPERTY]: task.id,
+      [GOOGLE_TASK_URL_PROPERTY]: task.webViewLink || task.selfLink,
+      description: task.notes
+    });
+    const file = await this.app.create(
+      path,
+      await buildNoteFromTemplate(this.app, this.config.newNoteTemplatePath, frontmatter)
+    );
+    this.syncedGoogleTaskIds.add(task.id);
+    return file;
+  }
+
+  private async syncGoogleTasksToInbox(): Promise<void> {
+    const sources = PluginState.getSettings().calendarSources.filter(
+      (source): source is GoogleTasksProviderConfig & CalendarInfo => source.type === 'googletasks'
+    );
+
+    for (const source of sources) {
+      const token = await this.getGoogleTasksToken(source);
+      if (!token) continue;
+
+      try {
+        const tasks = await fetchGoogleTasks(token, source.taskListId);
+        for (const task of tasks) {
+          await this.createBaseNoteFromGoogleTask(source, task);
+        }
+      } catch (error) {
+        console.error(`Base Full: failed to import Google Tasks list "${source.name}".`, error);
+      }
+    }
+  }
+
   async getEvents(_range?: {
     start: Date;
     end: Date;
@@ -397,9 +600,12 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     for (const file of await this.getFilteredFiles()) {
       const eventData = this.getEventFromFile(file);
       if (eventData) {
+        const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};
+        await this.syncBaseEventToGoogle(file, metadata, eventData[0]);
         events.push(eventData);
       }
     }
+    await this.syncGoogleTasksToInbox();
     return events;
   }
 
@@ -417,6 +623,10 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     }
 
     const event = this.getEventFromFile(file);
+    if (event) {
+      const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};
+      await this.syncBaseEventToGoogle(file, metadata, event[0]);
+    }
     return event ? [event] : [];
   }
 
@@ -583,6 +793,9 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     if (Object.keys(changedFields).length > 0) {
       await this.app.rewrite(file, page => modifyFrontmatterString(page, changedFields));
     }
+
+    const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};
+    await this.syncBaseEventToGoogle(file, { ...metadata, ...changedFields }, newEventData);
 
     return { file: { path: file.path }, lineNumber: undefined };
   }
