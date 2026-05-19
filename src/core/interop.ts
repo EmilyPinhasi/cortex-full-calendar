@@ -155,6 +155,11 @@ export function toEventInput(
       recurringEventId: event.recurringEventId,
       category: event.category,
       subCategory: event.subCategory,
+      hasSchedule:
+        !!event.hasSchedule ||
+        event.type === 'recurring' ||
+        event.type === 'rrule' ||
+        !!event.recurringEventId,
       isShadow: false // Flag to identify the real event
     },
     // Support for background events and other display types

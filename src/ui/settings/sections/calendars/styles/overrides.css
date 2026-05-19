@@ -286,6 +286,26 @@
     align-items: center;
 }
 
+.ofc-has-schedule-indicator {
+    align-items: center;
+    display: inline-flex;
+    gap: 4px;
+    min-width: 0;
+}
+
+.ofc-schedule-indicator {
+    align-items: center;
+    color: currentColor;
+    display: inline-flex;
+    flex: 0 0 auto;
+    opacity: 0.78;
+}
+
+.ofc-schedule-indicator svg {
+    height: 0.9em;
+    width: 0.9em;
+}
+
 .ofc-task-completed .fc-event-title,
 .ofc-task-completed .fc-list-event-title,
 .ofc-task-skipped .fc-event-title,

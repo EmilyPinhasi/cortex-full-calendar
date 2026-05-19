@@ -709,7 +709,8 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
       type: toCalendarEventType(metadata.type),
       allDay: typeof metadata.allDay === 'boolean' ? metadata.allDay : true,
       date,
-      completed
+      completed,
+      hasSchedule: metadata.schedule !== undefined
     };
 
     [

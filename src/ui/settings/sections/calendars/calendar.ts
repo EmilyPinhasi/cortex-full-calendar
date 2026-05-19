@@ -22,7 +22,7 @@ import type {
   EventSourceInput
 } from '@fullcalendar/core';
 
-import { Menu } from 'obsidian';
+import { Menu, setIcon } from 'obsidian';
 
 // The named `activeDocument` import from 'obsidian' can resolve to `undefined`
 // in lazy-loaded chunks (the runtime exposes it as a global on `window` instead).
@@ -35,6 +35,24 @@ const getActiveDocument = (): Document =>
 const createDetachedElement = <K extends keyof HTMLElementTagNameMap>(
   tagName: K
 ): HTMLElementTagNameMap[K] => getActiveDocument().createElement(tagName);
+
+const addScheduleIndicator = (eventEl: HTMLElement): void => {
+  const container =
+    eventEl.querySelector('.fc-event-title') ||
+    eventEl.querySelector('.fc-list-event-title') ||
+    eventEl.querySelector('.fc-event-time');
+  if (!container || container.querySelector('.ofc-schedule-indicator')) {
+    return;
+  }
+
+  const indicator = createDetachedElement('span');
+  indicator.addClass('ofc-schedule-indicator');
+  indicator.setAttribute('aria-label', 'Repeating schedule');
+  indicator.setAttribute('title', 'Repeating schedule');
+  setIcon(indicator, 'repeat');
+  container.append(indicator);
+  container.addClass('ofc-has-schedule-indicator');
+};
 import type { PluginDef } from '@fullcalendar/core';
 import type { RecurringInstanceState } from '../../../../providers/Provider';
 import { createDateNavigation } from '../../../../features/navigation/DateNavigation';
@@ -675,6 +693,10 @@ export async function renderCalendar(
       const eventColor = event.backgroundColor || event.borderColor || '';
       if (eventColor) {
         el.style.setProperty('--event-color', eventColor);
+      }
+
+      if (event.extendedProps.hasSchedule) {
+        addScheduleIndicator(el);
       }
 
       el.addEventListener('contextmenu', e => {
