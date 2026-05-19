@@ -104,7 +104,8 @@ const calendarOptionsSchema = z.discriminatedUnion('type', [
       dateProperty: z.string(),
       statusProperty: z.string().optional(),
       completeStatusValue: z.string().optional(),
-      incompleteStatusValue: z.string().optional()
+      incompleteStatusValue: z.string().optional(),
+      baseQueryMode: z.enum(['auto', 'cli', 'parser']).optional()
     })
     .merge(calendarTemplateOptionsSchema)
 ]);

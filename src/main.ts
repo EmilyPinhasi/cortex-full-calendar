@@ -186,6 +186,13 @@ export default class FullCalendarPlugin extends Plugin {
       })
     );
     this.registerEvent(
+      this.app.vault.on('modify', file => {
+        if (file instanceof TFile && file.extension === 'base') {
+          void PluginState.getProviderRegistry().handleFileUpdate(file);
+        }
+      })
+    );
+    this.registerEvent(
       this.app.vault.on('rename', (file, oldPath) => {
         if (file instanceof TFile) {
           // A rename is a delete at the old path.

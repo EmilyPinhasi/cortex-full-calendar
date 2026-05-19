@@ -93,4 +93,60 @@ describe('BaseFullProvider', () => {
 
     expect(result).toBeNull();
   });
+
+  it('uses Obsidian CLI base query paths when available', async () => {
+    const returnedFile = makeFile('one.md');
+    const execFile = jest.fn(
+      (
+        _command: string,
+        _args: string[],
+        _options: unknown,
+        callback: (error: Error | null, stdout: string, stderr: string) => void
+      ) => callback(null, 'one.md\r\nmissing.md\r\n', '')
+    );
+    const originalRequire = (window as unknown as { require?: unknown }).require;
+    (window as unknown as { require?: unknown }).require = jest.fn(() => ({ execFile }));
+
+    const provider = new BaseFullProvider(
+      {
+        type: 'basefull',
+        name: 'Test Base',
+        color: '#3788d8',
+        basePath: 'menus.base',
+        baseViewIndex: 1,
+        createDirectory: 'inbox',
+        dateProperty: 'date'
+      },
+      {
+        app: {
+          vault: {
+            adapter: {
+              getBasePath: () => 'C:/vault'
+            }
+          }
+        }
+      } as unknown as ConstructorParameters<typeof BaseFullProvider>[1],
+      {
+        getFileByPath: (path: string) => (path === 'one.md' ? returnedFile : null)
+      } as unknown as ConstructorParameters<typeof BaseFullProvider>[2]
+    );
+
+    const result = await (
+      provider as unknown as {
+        getCliFilteredFiles(baseData: {
+          views: { name: string }[];
+        }): Promise<TFile[] | null>;
+      }
+    ).getCliFilteredFiles({ views: [{ name: 'weekly menu' }, { name: 'סובב בית' }] });
+
+    expect(result).toEqual([returnedFile]);
+    expect(execFile).toHaveBeenCalledWith(
+      'obsidian',
+      ['base:query', 'path=menus.base', 'view=סובב בית', 'format=paths'],
+      { cwd: 'C:/vault', windowsHide: true, timeout: 10000 },
+      expect.any(Function)
+    );
+
+    (window as unknown as { require?: unknown }).require = originalRequire;
+  });
 });

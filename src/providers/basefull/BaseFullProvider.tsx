@@ -11,6 +11,13 @@ import { BaseFullConfigComponent, BaseFullConfigComponentProps } from './BaseFul
 import { buildNoteFromTemplate } from '../../utils/noteTemplate';
 import { BaseFile, BaseFilter, combineBaseFilters, evaluateBaseFilter } from '../bases/baseFilter';
 
+type ExecFile = (
+  file: string,
+  args: string[],
+  options: { cwd?: string; windowsHide?: boolean; timeout?: number },
+  callback: (error: Error | null, stdout: string, stderr: string) => void
+) => void;
+
 export interface BaseFullProviderConfig {
   type: 'basefull';
   id?: string;
@@ -21,6 +28,7 @@ export interface BaseFullProviderConfig {
   statusProperty?: string;
   completeStatusValue?: string;
   incompleteStatusValue?: string;
+  baseQueryMode?: 'auto' | 'cli' | 'parser';
   color: string;
   name: string;
   newNoteTemplatePath?: string;
@@ -35,6 +43,8 @@ const DEFAULT_DATE_PROPERTY = 'date';
 const DEFAULT_COMPLETE_STATUS = 'done';
 const DEFAULT_INCOMPLETE_STATUS = 'todo';
 const SUFFIX_PATTERN = '-_-_-';
+const CLI_QUERY_TIMEOUT_MS = 10_000;
+const CLI_RETRY_DELAY_MS = 30_000;
 
 function sanitizeTitleForFilename(title: string): string {
   return title
@@ -57,6 +67,27 @@ function findUniquePath(app: ObsidianInterface, directory: string, baseFilename:
     }
     i++;
   }
+}
+
+function getExecFile(): ExecFile | null {
+  const maybeRequire = (window as unknown as { require?: (moduleName: string) => unknown }).require;
+  if (!maybeRequire) return null;
+
+  try {
+    const childProcess = maybeRequire('child_process') as { execFile?: ExecFile };
+    return typeof childProcess.execFile === 'function' ? childProcess.execFile : null;
+  } catch {
+    return null;
+  }
+}
+
+function parseCliPathOutput(output: string): string[] {
+  return output
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => line.replace(/^["']|["']$/g, ''))
+    .map(path => normalizePath(path));
 }
 
 function toDateString(value: unknown): string | null {
@@ -210,6 +241,8 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   private config: BaseFullProviderConfig;
   private plugin: FullCalendarPlugin;
   private app: ObsidianInterface;
+  private cliQueryPromise: Promise<TFile[]> | null = null;
+  private cliDisabledUntil = 0;
 
   constructor(config: BaseFullProviderConfig, plugin: FullCalendarPlugin, app?: ObsidianInterface) {
     if (!app) {
@@ -234,6 +267,10 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
 
   private get incompleteStatusValue(): string {
     return this.config.incompleteStatusValue || DEFAULT_INCOMPLETE_STATUS;
+  }
+
+  private get baseQueryMode(): 'auto' | 'cli' | 'parser' {
+    return this.config.baseQueryMode || 'auto';
   }
 
   private getDateFromMetadata(metadata: Record<string, unknown>): string | null {
@@ -271,16 +308,85 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     }
   }
 
-  private async getFilteredFiles(): Promise<TFile[]> {
-    const baseData = await this.getBaseData();
-    if (!baseData) return [];
+  private getSelectedViewName(baseData: BaseFile): string | null {
+    const viewIndex = this.config.baseViewIndex ?? 0;
+    const viewName = baseData.views?.[viewIndex]?.name;
+    return typeof viewName === 'string' && viewName.trim().length > 0 ? viewName.trim() : null;
+  }
 
+  private getVaultBasePath(): string | null {
+    const adapter = this.plugin.app.vault.adapter as { getBasePath?: () => string };
+    return typeof adapter.getBasePath === 'function' ? adapter.getBasePath() : null;
+  }
+
+  private async getCliFilteredFiles(baseData: BaseFile): Promise<TFile[] | null> {
+    if (this.baseQueryMode === 'parser') return null;
+    if (this.baseQueryMode === 'auto' && Date.now() < this.cliDisabledUntil) return null;
+    if (this.cliQueryPromise) return this.cliQueryPromise;
+
+    const execFile = getExecFile();
+    const vaultBasePath = this.getVaultBasePath();
+    const viewName = this.getSelectedViewName(baseData);
+    if (!execFile || !vaultBasePath || !viewName) {
+      return null;
+    }
+
+    const args = [
+      'base:query',
+      `path=${this.config.basePath}`,
+      `view=${viewName}`,
+      'format=paths'
+    ];
+
+    this.cliQueryPromise = new Promise<TFile[]>((resolve, reject) => {
+      execFile(
+        'obsidian',
+        args,
+        { cwd: vaultBasePath, windowsHide: true, timeout: CLI_QUERY_TIMEOUT_MS },
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(new Error(stderr.trim() || error.message));
+            return;
+          }
+
+          const files = parseCliPathOutput(stdout)
+            .map(path => this.app.getFileByPath(path))
+            .filter((file): file is TFile => file instanceof TFile && file.extension === 'md');
+          resolve(files);
+        }
+      );
+    }).finally(() => {
+      this.cliQueryPromise = null;
+    });
+
+    try {
+      return await this.cliQueryPromise;
+    } catch (error) {
+      this.cliDisabledUntil =
+        this.baseQueryMode === 'auto' ? Date.now() + CLI_RETRY_DELAY_MS : this.cliDisabledUntil;
+      console.warn('Base Full: Obsidian CLI base:query failed; falling back to parser.', error);
+      if (this.baseQueryMode === 'cli') {
+        throw error;
+      }
+      return null;
+    }
+  }
+
+  private getParserFilteredFiles(baseData: BaseFile): TFile[] {
     const baseFilter = combineBaseFilters(baseData, this.config.baseViewIndex);
     return this.plugin.app.vault.getFiles().filter(file => {
       if (file.extension !== 'md') return false;
       if (!baseFilter) return true;
       return this.evaluateFilter(baseFilter, file);
     });
+  }
+
+  private async getFilteredFiles(): Promise<TFile[]> {
+    const baseData = await this.getBaseData();
+    if (!baseData) return [];
+
+    const cliFiles = await this.getCliFilteredFiles(baseData);
+    return cliFiles || this.getParserFilteredFiles(baseData);
   }
 
   async getEvents(_range?: {
@@ -301,8 +407,15 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     if (!this.isFileRelevant(file)) return [];
     const baseData = await this.getBaseData();
     if (!baseData) return [];
-    const baseFilter = combineBaseFilters(baseData, this.config.baseViewIndex);
-    if (baseFilter && !this.evaluateFilter(baseFilter, file)) return [];
+
+    const cliFiles = await this.getCliFilteredFiles(baseData);
+    if (cliFiles) {
+      if (!cliFiles.some(cliFile => cliFile.path === file.path)) return [];
+    } else {
+      const baseFilter = combineBaseFilters(baseData, this.config.baseViewIndex);
+      if (baseFilter && !this.evaluateFilter(baseFilter, file)) return [];
+    }
+
     const event = this.getEventFromFile(file);
     return event ? [event] : [];
   }
@@ -343,6 +456,10 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   isFileRelevant(file: TFile): boolean {
     if (file.extension !== 'md') return false;
     return true;
+  }
+
+  shouldRefreshAllOnFileUpdate(file: TFile): boolean {
+    return file.path === this.config.basePath;
   }
 
   private getEventFromFile(file: TFile): [OFCEvent, EventLocation | null] | null {

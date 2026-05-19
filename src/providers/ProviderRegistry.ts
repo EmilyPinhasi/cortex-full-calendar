@@ -604,9 +604,24 @@ export class ProviderRegistry {
   public async handleFileUpdate(file: TFile): Promise<void> {
     if (!this.cache) return;
 
+    const fullRefreshInstances = [];
+
+    for (const [settingsId, instance] of this.instances.entries()) {
+      if (!instance.isRemote && instance.shouldRefreshAllOnFileUpdate?.(file)) {
+        fullRefreshInstances.push({ instance, settingsId });
+      }
+    }
+
+    for (const { instance, settingsId } of fullRefreshInstances) {
+      this.cache.syncCalendar(settingsId, await instance.getEvents());
+    }
+
     // Find all *local* provider instances that might be interested in this file.
     const interestedInstances = [];
     for (const [settingsId, instance] of this.instances.entries()) {
+      if (fullRefreshInstances.some(refresh => refresh.settingsId === settingsId)) {
+        continue;
+      }
       if (!instance.isRemote && instance.getEventsInFile) {
         const sourceInfo = this.getSource(settingsId);
         if (!sourceInfo) continue;
