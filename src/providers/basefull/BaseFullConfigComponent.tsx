@@ -103,6 +103,7 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
     e.preventDefault();
     if (!basePath || !createDirectory || !dateProperty) return;
     const name = basePath.split('/').pop()?.replace('.base', '') || 'Base Full';
+    const viewName = baseViews[baseViewIndex]?.name?.trim();
     onSave({
       type: 'basefull',
       basePath,
@@ -112,7 +113,7 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
       statusProperty: statusProperty.trim() || undefined,
       completeStatusValue,
       incompleteStatusValue,
-      name: config.name || `${name} Full`,
+      name: config.name || viewName || `${name} Full`,
       color: config.color || '#3788d8'
     });
   };

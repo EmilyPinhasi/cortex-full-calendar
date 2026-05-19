@@ -127,7 +127,8 @@
 
 .fc .ofc-toolbar-search-input-wrap.is-active-query .ofc-toolbar-search-input {
     border-color: var(--text-error);
-    box-shadow: 0 0 0 2px color-mix(in srgb, white 85%, transparent),
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, white 85%, transparent),
         0 0 16px 5px color-mix(in srgb, var(--text-error) 66%, transparent),
         0 0 32px 12px color-mix(in srgb, var(--text-error) 52%, transparent);
 }
@@ -214,8 +215,8 @@
     display: flex;
 }
 
-.full-calendar-edit-modal .setting-item-control input[type="text"],
-.full-calendar-edit-modal .setting-item-control input[type="date"],
+.full-calendar-edit-modal .setting-item-control input[type='text'],
+.full-calendar-edit-modal .setting-item-control input[type='date'],
 .full-calendar-edit-modal .setting-item-control select {
     width: 100%;
 }
@@ -251,7 +252,6 @@
     /* Optional: slightly different color for disabled label */
     color: var(--text-muted);
 }
-
 
 .full-calendar-edit-modal .modal-footer {
     display: flex;
@@ -303,7 +303,6 @@
 .full-calendar-confirm-modal .fc-confirm-highlight p:last-child {
     margin-bottom: 0;
 }
-
 
 .full-calendar-confirm-modal code {
     background-color: var(--background-modifier-hover);
@@ -365,61 +364,96 @@
     min-width: 0;
 }
 
-.ofc-calendar-setting-row.setting-item {
-    display: grid;
-    align-items: center;
-    gap: 0.5rem;
-    grid-template-areas: "delete reorder name provider color";
-    grid-template-columns: 2.75rem 2.75rem minmax(10rem, 1fr) minmax(16rem, 2fr) 3.5rem;
-    padding: 0.75rem 1rem;
-}
-
-.ofc-calendar-setting-row.has-template-path {
-    grid-template-areas: "delete reorder name provider template color";
-    grid-template-columns:
-        2.75rem 2.75rem minmax(9rem, 1fr) minmax(13rem, 1.6fr) minmax(11rem, 1.1fr) 3.5rem;
-}
-
-.ofc-calendar-setting-row .setting-item-control {
-    min-width: 0;
+.ofc-calendar-settings-table-wrap {
     width: 100%;
-    padding: 0;
+    overflow-x: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
 }
 
-.ofc-calendar-setting-name {
-    grid-area: name;
+.ofc-calendar-settings-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
 }
 
-.ofc-calendar-setting-provider {
-    grid-area: provider;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-    gap: 0.5rem;
-    min-width: 0;
+.ofc-calendar-settings-table th,
+.ofc-calendar-settings-table td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--background-modifier-border);
+    text-align: left;
+    vertical-align: middle;
 }
 
-.ofc-calendar-setting-provider .setting-item-control {
+.ofc-calendar-settings-table th {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    font-weight: var(--font-medium);
+    white-space: nowrap;
+}
+
+.ofc-calendar-settings-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ofc-calendar-settings-table-color {
+    width: 4rem;
+}
+
+.ofc-calendar-settings-color-swatch {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.ofc-calendar-settings-table-name {
+    min-width: 11rem;
+}
+
+.ofc-calendar-settings-primary {
+    font-weight: var(--font-medium);
+}
+
+.ofc-calendar-settings-muted,
+.ofc-calendar-settings-table-template,
+.fc-setting-desc {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+
+.ofc-calendar-settings-table-type {
+    width: 7rem;
+    white-space: nowrap;
+}
+
+.ofc-calendar-settings-table-details {
+    min-width: 16rem;
+}
+
+.ofc-calendar-settings-table-details .setting-item-control,
+.ofc-calendar-settings-provider-summary {
     display: flex;
     align-items: center;
     gap: 0.35rem;
     min-width: 0;
+    padding: 0;
     white-space: nowrap;
 }
 
-.ofc-calendar-setting-provider .setting-item-control>span,
+.ofc-calendar-settings-table-details .setting-item-control > span,
+.ofc-calendar-settings-provider-summary > span,
 .fc-setting-desc {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.fc-setting-desc {
-    color: var(--text-muted);
-}
-
-.ofc-calendar-setting-template {
-    grid-area: template;
+.ofc-calendar-settings-table-actions {
+    width: 9rem;
+    white-space: nowrap;
 }
 
 /* Styles for the Heading setting component */
@@ -432,29 +466,22 @@
 }
 
 .fc-heading-setting-control .fc-heading-setting-suffix {
-    padding-right: .5rem;
-}
-
-/* Styles for specific controls in calendar settings */
-.fc-setting-delete-btn {
-    grid-area: delete;
-    justify-self: center;
+    padding-right: 0.5rem;
 }
 
 .fc-setting-reorder-controls {
-    grid-area: reorder;
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     gap: 2px;
-    justify-self: center;
+    margin-right: 0.35rem;
+    vertical-align: middle;
 }
 
-.fc-setting-delete-btn,
+.fc-setting-icon-btn,
 .fc-setting-reorder-btn {
     font-size: 0;
 }
 
-.fc-setting-delete-btn svg,
+.fc-setting-icon-btn svg,
 .fc-setting-reorder-btn svg {
     width: 1rem;
     height: 1rem;
@@ -465,10 +492,21 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    width: 2.5rem;
+    width: 1.8rem;
     min-height: 0;
-    height: 1.2rem;
+    height: 1.8rem;
     cursor: pointer;
+}
+
+.fc-setting-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.25rem;
+    padding: 0;
+    width: 2rem;
+    min-height: 0;
+    height: 2rem;
 }
 
 .fc-setting-reorder-btn:disabled {
@@ -476,32 +514,9 @@
     cursor: not-allowed;
 }
 
-.fc-setting-color-input {
-    grid-area: color;
-    justify-self: end;
-    min-width: 3rem;
-    max-width: 3.5rem;
-    width: 100%;
-}
-
 @media (max-width: 760px) {
-    .ofc-calendar-setting-row.setting-item,
-    .ofc-calendar-setting-row.has-template-path {
-        grid-template-areas:
-            "delete reorder color"
-            "name name name"
-            "provider provider provider"
-            "template template template";
-        grid-template-columns: 2.75rem 2.75rem 1fr;
-    }
-
-    .ofc-calendar-setting-provider {
-        grid-auto-flow: row;
-    }
-
-    .fc-setting-color-input {
-        justify-self: end;
-        width: 3.5rem;
+    .ofc-calendar-settings-table {
+        min-width: 680px;
     }
 }
 
@@ -529,7 +544,8 @@
 /* Highlight only the current event, or the immediate next one when nothing is current. */
 .fc .fc-event.ofc-event-current-or-next,
 .fc .fc-list-event.ofc-event-current-or-next {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85),
+    box-shadow:
+        0 0 0 2px rgba(255, 255, 255, 0.85),
         0 0 24px 8px color-mix(in srgb, var(--interactive-accent) 78%, transparent),
         0 0 56px 24px color-mix(in srgb, var(--interactive-accent) 62%, transparent);
     outline: none;
@@ -544,7 +560,8 @@
     background: color-mix(in srgb, var(--interactive-accent) 26%, var(--background-primary));
     border: 1px solid color-mix(in srgb, var(--interactive-accent) 88%, white);
     border-radius: var(--radius-s);
-    box-shadow: 0 0 16px 5px color-mix(in srgb, var(--interactive-accent) 66%, transparent),
+    box-shadow:
+        0 0 16px 5px color-mix(in srgb, var(--interactive-accent) 66%, transparent),
         0 0 32px 12px color-mix(in srgb, var(--interactive-accent) 52%, transparent);
 }
 
@@ -566,9 +583,11 @@
 
 /* List rows are table rows, so render glow at cell level for visibility. */
 .fc .fc-list-event.ofc-event-current-or-next > td {
-    background: linear-gradient(90deg,
-            color-mix(in srgb, var(--interactive-accent) 28%, var(--background-primary)) 0%,
-            color-mix(in srgb, var(--interactive-accent) 16%, var(--background-primary)) 100%);
+    background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--interactive-accent) 28%, var(--background-primary)) 0%,
+        color-mix(in srgb, var(--interactive-accent) 16%, var(--background-primary)) 100%
+    );
     border-top: 1px solid color-mix(in srgb, var(--interactive-accent) 78%, white);
     border-bottom: 1px solid color-mix(in srgb, var(--interactive-accent) 78%, white);
     box-shadow: 0 0 18px 6px color-mix(in srgb, var(--interactive-accent) 58%, transparent);
@@ -813,7 +832,11 @@
 
 /* Modal header - prominent with accent color */
 .is-phone .full-calendar-edit-modal .modal-header {
-    background: linear-gradient(135deg, var(--interactive-accent) 0%, var(--interactive-accent-hover) 100%);
+    background: linear-gradient(
+        135deg,
+        var(--interactive-accent) 0%,
+        var(--interactive-accent-hover) 100%
+    );
     color: var(--text-on-accent);
     padding: 20px 20px 16px 20px;
     margin: 0 0 0 0;
@@ -884,10 +907,10 @@
 }
 
 /* Inputs - modern, large touch targets */
-.is-phone .full-calendar-edit-modal .setting-item-control input[type="text"],
-.is-phone .full-calendar-edit-modal .setting-item-control input[type="date"],
-.is-phone .full-calendar-edit-modal .setting-item-control input[type="time"],
-.is-phone .full-calendar-edit-modal .setting-item-control input[type="number"],
+.is-phone .full-calendar-edit-modal .setting-item-control input[type='text'],
+.is-phone .full-calendar-edit-modal .setting-item-control input[type='date'],
+.is-phone .full-calendar-edit-modal .setting-item-control input[type='time'],
+.is-phone .full-calendar-edit-modal .setting-item-control input[type='number'],
 .is-phone .full-calendar-edit-modal .setting-item-control select {
     width: 100%;
     min-height: 48px;
@@ -897,7 +920,9 @@
     border: 2px solid var(--background-modifier-border);
     background: var(--background-secondary);
     color: var(--text-normal);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .is-phone .full-calendar-edit-modal .setting-item-control input:focus,
@@ -914,7 +939,7 @@
     gap: 8px;
 }
 
-.is-phone .full-calendar-edit-modal .time-group input[type="time"] {
+.is-phone .full-calendar-edit-modal .time-group input[type='time'] {
     flex: 1;
     min-width: 0;
 }
@@ -948,7 +973,7 @@
     background: var(--background-modifier-hover);
 }
 
-.is-phone .full-calendar-edit-modal .options-group input[type="checkbox"] {
+.is-phone .full-calendar-edit-modal .options-group input[type='checkbox'] {
     width: 22px;
     height: 22px;
     margin: 0;
@@ -997,7 +1022,11 @@
 }
 
 .is-phone .full-calendar-edit-modal .modal-footer button.mod-cta {
-    background: linear-gradient(135deg, var(--interactive-accent) 0%, var(--interactive-accent-hover) 100%);
+    background: linear-gradient(
+        135deg,
+        var(--interactive-accent) 0%,
+        var(--interactive-accent-hover) 100%
+    );
     color: var(--text-on-accent);
     border: none;
     box-shadow: 0 4px 12px rgba(var(--interactive-accent-rgb), 0.3);
@@ -1022,7 +1051,7 @@
 }
 
 /* Notify label - styled to match other labels, LEFT aligned */
-.is-phone .full-calendar-edit-modal .options-group .u-flex-align-center>span:first-child {
+.is-phone .full-calendar-edit-modal .options-group .u-flex-align-center > span:first-child {
     font-size: 0.95rem;
     font-weight: 500;
     color: var(--text-normal);
@@ -1049,7 +1078,7 @@
 }
 
 /* Date input - add left padding to prevent text overlapping with calendar icon */
-.is-phone .full-calendar-edit-modal .setting-item-control input[type="date"] {
+.is-phone .full-calendar-edit-modal .setting-item-control input[type='date'] {
     padding-left: 36px;
 }
 
