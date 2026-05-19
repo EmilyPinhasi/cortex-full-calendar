@@ -83,6 +83,83 @@ function toCalendarEventType(value: unknown): 'single' | 'recurring' | 'rrule' {
   return 'single';
 }
 
+function copyStringField(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+  field: string
+): void {
+  if (typeof source[field] === 'string') {
+    target[field] = source[field];
+  }
+}
+
+function copyBooleanField(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+  field: string
+): void {
+  if (typeof source[field] === 'boolean') {
+    target[field] = source[field];
+  }
+}
+
+function copyNumberField(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+  field: string
+): void {
+  if (typeof source[field] === 'number') {
+    target[field] = source[field];
+  }
+}
+
+function copyStringArrayField(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+  field: string
+): void {
+  if (Array.isArray(source[field]) && source[field].every(value => typeof value === 'string')) {
+    target[field] = source[field];
+  }
+}
+
+function copyDisplayField(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  const validDisplays = new Set([
+    'auto',
+    'block',
+    'list-item',
+    'background',
+    'inverse-background',
+    'none'
+  ]);
+  if (typeof source.display === 'string' && validDisplays.has(source.display)) {
+    target.display = source.display;
+  }
+}
+
+function copyRepeatOnField(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  const repeatOn = source.repeatOn;
+  if (
+    repeatOn &&
+    typeof repeatOn === 'object' &&
+    typeof (repeatOn as { week?: unknown }).week === 'number' &&
+    typeof (repeatOn as { weekday?: unknown }).weekday === 'number'
+  ) {
+    target.repeatOn = repeatOn;
+  }
+}
+
+function copyNotifyField(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  const notify = source.notify;
+  if (
+    notify &&
+    typeof notify === 'object' &&
+    typeof (notify as { value?: unknown }).value === 'number'
+  ) {
+    target.notify = notify;
+  }
+}
+
 function areFieldValuesEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a === null || b === null || a === undefined || b === undefined) return false;
@@ -296,13 +373,39 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
           : false;
 
     const rawEvent: Record<string, unknown> = {
-      ...metadata,
       title: typeof metadata.title === 'string' ? metadata.title : file.basename,
       type: toCalendarEventType(metadata.type),
       allDay: typeof metadata.allDay === 'boolean' ? metadata.allDay : true,
       date,
       completed
     };
+
+    [
+      'id',
+      'uid',
+      'timezone',
+      'etag',
+      'category',
+      'subCategory',
+      'recurringEventId',
+      'description',
+      'url',
+      'startTime',
+      'endTime',
+      'endDate',
+      'startDate',
+      'rrule',
+      'startRecur',
+      'endRecur'
+    ].forEach(field => copyStringField(rawEvent, metadata, field));
+    ['endReminder', 'isTask'].forEach(field => copyBooleanField(rawEvent, metadata, field));
+    ['month', 'dayOfMonth', 'repeatInterval'].forEach(field =>
+      copyNumberField(rawEvent, metadata, field)
+    );
+    ['daysOfWeek', 'skipDates'].forEach(field => copyStringArrayField(rawEvent, metadata, field));
+    copyDisplayField(rawEvent, metadata);
+    copyRepeatOnField(rawEvent, metadata);
+    copyNotifyField(rawEvent, metadata);
 
     const event = validateEvent(rawEvent);
     if (!event) return null;
