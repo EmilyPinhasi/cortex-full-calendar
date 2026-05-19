@@ -470,9 +470,9 @@ export class ViewEventInteractionHandler {
       }
 
       await provider.scheduleUndatedItem(path, date);
-      PluginState.getCache().syncCalendar(calendarId, await provider.getEvents());
+      // The metadataCache 'changed' event will fire once Obsidian reparses the
+      // frontmatter and route the new event into the cache via handleFileUpdate.
       showNotice('Base item scheduled.');
-      void this.ctx.refreshView();
     } catch (error) {
       console.error('Failed to schedule Base Full item:', error);
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
