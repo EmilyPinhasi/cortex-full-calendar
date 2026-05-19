@@ -172,15 +172,22 @@ export class CalendarSettings
       .filter((s): s is string => !!s);
   };
 
-  updateSource = (index: number, source: CalendarInfo) => {
-    this.setState(state => {
-      const newSources = [...state.sources];
-      newSources[index] = source;
-      return {
-        sources: newSources,
-        dirty: true
-      };
-    });
+  updateSource = (index: number, source: CalendarInfo, persist = false) => {
+    this.setState(
+      state => {
+        const newSources = [...state.sources];
+        newSources[index] = source;
+        return {
+          sources: newSources,
+          dirty: !persist
+        };
+      },
+      () => {
+        if (persist) {
+          this.props.submit(this.state.sources.map(elt => elt));
+        }
+      }
+    );
   };
 
   moveSource = (from: number, to: number) => {
@@ -216,7 +223,7 @@ export class CalendarSettings
                   plugin={this.props.plugin}
                   editCalendar={() => {
                     void openEditCalendarModal(this.props.plugin, s, updated => {
-                      this.updateSource(idx, updated);
+                      this.updateSource(idx, updated, true);
                     });
                   }}
                   deleteCalendar={() =>
