@@ -277,10 +277,14 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     }
   }
 
-  private async getFilteredFiles(): Promise<TFile[]> {
+  private async getFilteredFiles(caller = 'unknown'): Promise<TFile[]> {
     const baseData = await this.getBaseData();
     if (!baseData) {
-      console.warn('[basefull] getFilteredFiles: no baseData', this.config.basePath);
+      console.warn(
+        '[basefull] getFilteredFiles: no baseData',
+        caller,
+        this.config.basePath
+      );
       return [];
     }
 
@@ -292,6 +296,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
       return this.evaluateFilter(baseFilter, file);
     });
     console.warn('[basefull] getFilteredFiles', {
+      caller,
       basePath: this.config.basePath,
       baseViewIndex: this.config.baseViewIndex,
       hasFilter: !!baseFilter,
@@ -307,8 +312,9 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     start: Date;
     end: Date;
   }): Promise<[OFCEvent, EventLocation | null][]> {
+    console.warn('[basefull] getEvents:start', this.config.name);
     const events: [OFCEvent, EventLocation | null][] = [];
-    const filtered = await this.getFilteredFiles();
+    const filtered = await this.getFilteredFiles('getEvents');
     let rejectedNoMetadata = 0;
     let rejectedNoDate = 0;
     let rejectedValidation = 0;
@@ -377,7 +383,8 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   }
 
   async getUndatedItems(): Promise<BaseFullUndatedItem[]> {
-    const files = await this.getFilteredFiles();
+    console.warn('[basefull] getUndatedItems:start', this.config.name);
+    const files = await this.getFilteredFiles('getUndatedItems');
     return files
       .map(file => {
         const metadata = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {};
