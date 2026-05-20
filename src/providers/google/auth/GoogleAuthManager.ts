@@ -12,6 +12,7 @@ import { CalendarInfo } from '../../../types';
 import { GoogleAccount } from '../../../types/settings';
 // generateCalendarId import removed - was unused
 import { t } from '../../../features/i18n/i18n';
+import { GoogleCredentialStore, GoogleCredentials } from './GoogleCredentialStore';
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const PROXY_REFRESH_URL = 'https://gcal-proxy-server.vercel.app/api/google/refresh';
@@ -37,9 +38,44 @@ type LegacyAuth = {
 
 export class GoogleAuthManager {
   private plugin: FullCalendarPlugin;
+  private credentialStore: GoogleCredentialStore;
 
   constructor(plugin: FullCalendarPlugin) {
     this.plugin = plugin;
+    this.credentialStore = new GoogleCredentialStore(plugin);
+  }
+
+  public async migrateSettingsSecrets(): Promise<boolean> {
+    const settings = PluginState.getSettings();
+    let changed = false;
+
+    if (settings.googleClientSecret) {
+      this.credentialStore.setClientSecret(settings.googleClientSecret);
+      settings.googleClientSecret = '';
+      changed = true;
+    }
+
+    for (const account of settings.googleAccounts || []) {
+      if (account.refreshToken || account.accessToken || account.expiryDate) {
+        account.credentialSecretId = this.credentialStore.setCredentials(account, {
+          refreshToken: account.refreshToken,
+          accessToken: account.accessToken,
+          expiryDate: account.expiryDate
+        });
+        account.refreshToken = null;
+        account.accessToken = null;
+        account.expiryDate = null;
+        changed = true;
+      } else if (!account.credentialSecretId) {
+        account.credentialSecretId = this.credentialStore.getAccountSecretId(account.id);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await PluginState.saveSettings();
+    }
+    return changed;
   }
 
   /**
@@ -51,7 +87,10 @@ export class GoogleAuthManager {
     isLegacy: boolean // This parameter is now effectively unused but safe to keep
   ): Promise<string | null> {
     const settings = PluginState.getSettings();
-    if (!authObj.refreshToken) {
+    const credentials: GoogleCredentials =
+      'id' in authObj ? this.credentialStore.getCredentials(authObj) : authObj;
+
+    if (!credentials.refreshToken) {
       const email = 'email' in authObj ? authObj.email : 'unknown';
       const id = 'id' in authObj ? authObj.id : 'unknown';
       console.error(`No refresh token available. Account: ${email} (ID: ${id})`);
@@ -69,8 +108,8 @@ export class GoogleAuthManager {
       const body = new URLSearchParams({
         grant_type: 'refresh_token',
         client_id: clientId,
-        refresh_token: authObj.refreshToken,
-        client_secret: settings.googleClientSecret
+        refresh_token: credentials.refreshToken,
+        client_secret: this.credentialStore.getClientSecret()
       });
       requestBody = body.toString();
       requestHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };
@@ -78,7 +117,7 @@ export class GoogleAuthManager {
       tokenUrl = PROXY_REFRESH_URL;
       const body = {
         client_id: clientId,
-        refresh_token: authObj.refreshToken
+        refresh_token: credentials.refreshToken
       };
       requestBody = JSON.stringify(body);
       requestHeaders = { 'Content-Type': 'application/json' };
@@ -95,9 +134,21 @@ export class GoogleAuthManager {
 
       if (response.status >= 200 && response.status < 300) {
         const data = response.json as GoogleTokenResponse;
-        // Mutate the object that was passed in
-        authObj.accessToken = data.access_token;
-        authObj.expiryDate = Date.now() + data.expires_in * 1000;
+        const updatedCredentials = {
+          refreshToken: credentials.refreshToken,
+          accessToken: data.access_token,
+          expiryDate: Date.now() + data.expires_in * 1000
+        };
+
+        if ('id' in authObj) {
+          authObj.credentialSecretId = this.credentialStore.setCredentials(authObj, updatedCredentials);
+          authObj.refreshToken = null;
+          authObj.accessToken = null;
+          authObj.expiryDate = null;
+        } else {
+          authObj.accessToken = updatedCredentials.accessToken;
+          authObj.expiryDate = updatedCredentials.expiryDate;
+        }
 
         // Save settings to persist the new token
         await PluginState.saveSettings();
@@ -118,6 +169,7 @@ export class GoogleAuthManager {
             account.accessToken = null;
             account.refreshToken = null;
             account.expiryDate = null;
+            this.credentialStore.clearCredentials(account);
           }
         }
         await PluginState.saveSettings();
@@ -157,8 +209,13 @@ export class GoogleAuthManager {
       return null;
     }
 
-    if (account.accessToken && account.expiryDate && Date.now() < account.expiryDate - 60000) {
-      return account.accessToken;
+    const credentials = this.credentialStore.getCredentials(account);
+    if (
+      credentials.accessToken &&
+      credentials.expiryDate &&
+      Date.now() < credentials.expiryDate - 60000
+    ) {
+      return credentials.accessToken;
     }
     return this.refreshAccessToken(account, false);
 
@@ -190,8 +247,12 @@ export class GoogleAuthManager {
     const newAccount: GoogleAccount = {
       id: `gcal_${userEmail}`,
       email: userEmail,
-      ...auth
+      credentialSecretId: '',
+      refreshToken: null,
+      accessToken: null,
+      expiryDate: null
     };
+    newAccount.credentialSecretId = this.credentialStore.setCredentials(newAccount, auth);
 
     const existingAccounts = PluginState.getSettings().googleAccounts || [];
     const index = existingAccounts.findIndex(a => a.id === newAccount.id);
@@ -213,6 +274,10 @@ export class GoogleAuthManager {
    * Removes a Google Account and all its associated calendars.
    */
   public async removeAccount(accountId: string): Promise<void> {
+    const account = PluginState.getSettings().googleAccounts.find(a => a.id === accountId);
+    if (account) {
+      this.credentialStore.clearCredentials(account);
+    }
     PluginState.getSettings().googleAccounts = (
       PluginState.getSettings().googleAccounts || []
     ).filter(a => a.id !== accountId);

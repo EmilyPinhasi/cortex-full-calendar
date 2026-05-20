@@ -16,6 +16,7 @@ import FullCalendarPlugin from '../../../main';
 import { GoogleAuthManager } from './GoogleAuthManager';
 import { t } from '../../../features/i18n/i18n';
 import { PluginState } from '../../../core/PluginState';
+import { GoogleCredentialStore } from './GoogleCredentialStore';
 
 // =================================================================================================
 // CONSTANTS
@@ -169,8 +170,10 @@ export async function startGoogleLogin(plugin: FullCalendarPlugin): Promise<void
 
   const clientId = settings.useCustomGoogleClient ? settings.googleClientId : PUBLIC_CLIENT_ID;
   const redirectUri = isMobile ? MOBILE_REDIRECT_URI : DESKTOP_REDIRECT_URI;
+  const credentialStore = new GoogleCredentialStore(plugin);
+  const clientSecret = credentialStore.getClientSecret();
 
-  if (settings.useCustomGoogleClient && (!clientId || !settings.googleClientSecret)) {
+  if (settings.useCustomGoogleClient && (!clientId || !clientSecret)) {
     showNotice(t('google.auth.customCredsMissing'));
     // Close the mobile window if we opened one
     if (mobileWindow) {
@@ -215,6 +218,7 @@ export async function exchangeCodeForToken(
   const isMobile = Platform.isMobile;
   const redirectUri = isMobile ? MOBILE_REDIRECT_URI : DESKTOP_REDIRECT_URI;
   const clientId = settings.useCustomGoogleClient ? settings.googleClientId : PUBLIC_CLIENT_ID;
+  const credentialStore = new GoogleCredentialStore(plugin);
 
   let tokenUrl: string;
   let requestBody: string;
@@ -229,7 +233,7 @@ export async function exchangeCodeForToken(
       code: code,
       code_verifier: pkce.verifier,
       redirect_uri: redirectUri,
-      client_secret: settings.googleClientSecret
+      client_secret: credentialStore.getClientSecret()
     });
     requestBody = body.toString();
     requestHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };

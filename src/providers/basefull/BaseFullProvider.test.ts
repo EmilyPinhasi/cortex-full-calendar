@@ -94,6 +94,36 @@ describe('BaseFullProvider', () => {
     expect(result).toBeNull();
   });
 
+  it('does not sync Base notes to Google Tasks unless explicitly enabled', async () => {
+    const provider = makeProvider({
+      title: 'Sync Candidate',
+      date: '2026-05-18',
+      gTasksList: 'Inbox'
+    });
+    const getGoogleTasksSourceByName = jest.spyOn(
+      provider as unknown as {
+        getGoogleTasksSourceByName(listName: string): unknown;
+      },
+      'getGoogleTasksSourceByName'
+    );
+
+    await (
+      provider as unknown as {
+        syncBaseEventToGoogle(
+          file: TFile,
+          metadata: Record<string, unknown>,
+          event: { type: 'single'; title: string; date: string; allDay: true }
+        ): Promise<void>;
+      }
+    ).syncBaseEventToGoogle(
+      makeFile('sync.md'),
+      { gTasksList: 'Inbox' },
+      { type: 'single', title: 'Sync Candidate', date: '2026-05-18', allDay: true }
+    );
+
+    expect(getGoogleTasksSourceByName).not.toHaveBeenCalled();
+  });
+
   it('uses Obsidian CLI base query paths when available', async () => {
     const returnedFile = makeFile('one.md');
     const execFile = jest.fn(

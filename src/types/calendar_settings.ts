@@ -105,7 +105,8 @@ const calendarOptionsSchema = z.discriminatedUnion('type', [
       statusProperty: z.string().optional(),
       completeStatusValue: z.string().optional(),
       incompleteStatusValue: z.string().optional(),
-      baseQueryMode: z.enum(['auto', 'cli', 'parser']).optional()
+      baseQueryMode: z.enum(['auto', 'cli', 'parser']).optional(),
+      googleTasksSyncEnabled: z.boolean().optional()
     })
     .merge(calendarTemplateOptionsSchema)
 ]);

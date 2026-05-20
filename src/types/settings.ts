@@ -82,6 +82,7 @@ export interface BusinessHoursSettings {
 export interface GoogleAccount {
   id: string; // A unique identifier for this account
   email: string; // The user's email for display purposes
+  credentialSecretId?: string;
   refreshToken: string | null;
   accessToken: string | null;
   expiryDate: number | null;

@@ -67,12 +67,13 @@ export const GoogleTasksConfigComponent: React.FC<GoogleTasksConfigComponentProp
       setSelectedAccount(account);
 
       try {
+        let accessToken: string | null = null;
         if (
           !account.accessToken ||
           !account.expiryDate ||
           Date.now() >= account.expiryDate - 60000
         ) {
-          const token = await authManager.getTokenForSource({
+          accessToken = await authManager.getTokenForSource({
             type: 'google',
             id: `temp_${account.id}`,
             name: account.email,
@@ -80,16 +81,17 @@ export const GoogleTasksConfigComponent: React.FC<GoogleTasksConfigComponentProp
             googleAccountId: account.id,
             color: ''
           });
-          if (!token) {
+          if (!accessToken) {
             throw new GoogleApiError(
               `Failed to refresh token for ${account.email}. Please reconnect the account.`
             );
           }
-          account.accessToken = token;
+        } else {
+          accessToken = account.accessToken;
         }
 
         const { fetchGoogleTaskLists } = await import('../auth/api');
-        const allLists = await fetchGoogleTaskLists(account);
+        const allLists = await fetchGoogleTaskLists({ ...account, accessToken });
         const existingListIds = new Set(
           PluginState.getSettings()
             .calendarSources.filter(

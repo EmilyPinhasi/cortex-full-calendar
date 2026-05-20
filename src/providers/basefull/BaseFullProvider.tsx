@@ -40,6 +40,7 @@ export interface BaseFullProviderConfig {
   completeStatusValue?: string;
   incompleteStatusValue?: string;
   baseQueryMode?: 'auto' | 'cli' | 'parser';
+  googleTasksSyncEnabled?: boolean;
   color: string;
   name: string;
   newNoteTemplatePath?: string;
@@ -321,6 +322,10 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     return this.config.baseQueryMode || 'auto';
   }
 
+  private get googleTasksSyncEnabled(): boolean {
+    return this.config.googleTasksSyncEnabled === true;
+  }
+
   private getDateFromMetadata(metadata: Record<string, unknown>): string | null {
     return toDateString(metadata[this.dateProperty]);
   }
@@ -500,6 +505,8 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
     metadata: Record<string, unknown>,
     event: OFCEvent
   ): Promise<void> {
+    if (!this.googleTasksSyncEnabled) return;
+
     const listName = getStringMetadata(metadata, GOOGLE_TASKS_LIST_PROPERTY);
     if (!listName) return;
 
@@ -592,6 +599,8 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
   }
 
   private async syncGoogleTasksToInbox(): Promise<void> {
+    if (!this.googleTasksSyncEnabled) return;
+
     const sources = PluginState.getSettings().calendarSources.filter(
       (source): source is GoogleTasksProviderConfig & CalendarInfo => source.type === 'googletasks'
     );
@@ -868,6 +877,7 @@ export class BaseFullProvider implements CalendarProvider<BaseFullProviderConfig
             {base.baseViewIndex !== undefined ? `view ${base.baseViewIndex + 1} / ` : ''}
             {base.dateProperty || DEFAULT_DATE_PROPERTY}
             {base.statusProperty ? ` / ${base.statusProperty}` : ''}
+            {base.googleTasksSyncEnabled ? ' / Google Tasks sync' : ''}
           </span>
         </div>
       );

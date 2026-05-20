@@ -90,6 +90,7 @@ export const GoogleConfigComponent: React.FC<GoogleConfigComponentProps> = ({
       setSelectedAccount(account);
 
       try {
+        let accessToken: string | null = null;
         // Refresh token if it's expired before we use it
         if (
           !account.accessToken ||
@@ -97,7 +98,7 @@ export const GoogleConfigComponent: React.FC<GoogleConfigComponentProps> = ({
           Date.now() >= account.expiryDate - 60000
         ) {
           // Use public API (getTokenForSource) to trigger refresh logic.
-          const token = await authManager.getTokenForSource({
+          accessToken = await authManager.getTokenForSource({
             type: 'google',
             id: `temp_${account.id}`,
             name: account.email,
@@ -105,17 +106,21 @@ export const GoogleConfigComponent: React.FC<GoogleConfigComponentProps> = ({
             googleAccountId: account.id,
             color: ''
           });
-          if (!token) {
+          if (!accessToken) {
             throw new GoogleApiError(
               `Failed to refresh token for ${account.email}. Please try connecting the account again.`
             );
           }
-          account.accessToken = token;
+        } else {
+          accessToken = account.accessToken;
         }
 
         const { fetchGoogleCalendarList } = await import('../auth/api');
         // REMOVE THE HACK and pass the account object directly.
-        const allCalendars = await fetchGoogleCalendarList(plugin, account);
+        const allCalendars = await fetchGoogleCalendarList(plugin, {
+          ...account,
+          accessToken
+        });
         const existingGoogleIds = new Set(
           PluginState.getSettings()
             .calendarSources.filter(

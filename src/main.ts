@@ -125,6 +125,8 @@ export default class FullCalendarPlugin extends Plugin {
     PluginState.getProviderRegistry().registerBuiltInProviders();
 
     await this.#loadSettings(); // This now handles setting and syncing
+    const { GoogleAuthManager } = await import('./providers/google/auth/GoogleAuthManager');
+    await new GoogleAuthManager(this).migrateSettingsSecrets();
 
     await PluginState.getProviderRegistry().initializeInstances();
 

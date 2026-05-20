@@ -34,6 +34,9 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
   );
   const [baseFiles, setBaseFiles] = React.useState<string[]>([]);
   const [directories, setDirectories] = React.useState<string[]>([]);
+  const [googleTasksSyncEnabled, setGoogleTasksSyncEnabled] = React.useState(
+    config.googleTasksSyncEnabled === true
+  );
 
   React.useEffect(() => {
     if (!plugin) return;
@@ -56,6 +59,7 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
       statusProperty,
       completeStatusValue,
       incompleteStatusValue,
+      googleTasksSyncEnabled,
       ...next
     };
     onConfigChange({
@@ -113,6 +117,7 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
       statusProperty: statusProperty.trim() || undefined,
       completeStatusValue,
       incompleteStatusValue,
+      googleTasksSyncEnabled,
       name: config.name || viewName || `${name} Full`,
       color: config.color || '#3788d8'
     });
@@ -276,6 +281,27 @@ export const BaseFullConfigComponent: React.FC<BaseFullConfigComponentProps> = (
           </div>
         </>
       )}
+
+      <div className="setting-item">
+        <div className="setting-item-info">
+          <div className="setting-item-name">Google Tasks sync</div>
+          <div className="setting-item-description">
+            Mirror notes with a gTasksList property to Google Tasks and import synced Google Tasks
+            into this Base Full inbox.
+          </div>
+        </div>
+        <div className="setting-item-control">
+          <input
+            type="checkbox"
+            checked={googleTasksSyncEnabled}
+            onChange={e => {
+              const enabled = e.target.checked;
+              setGoogleTasksSyncEnabled(enabled);
+              emitConfig({ googleTasksSyncEnabled: enabled });
+            }}
+          />
+        </div>
+      </div>
 
       <div className="setting-item">
         <div className="setting-item-control">

@@ -10,6 +10,7 @@ import FullCalendarPlugin from '../../../main';
 import { GoogleAuthManager } from '../auth/GoogleAuthManager';
 import { t } from '../../../features/i18n/i18n';
 import { createDescWithDocs, createDocsLinksFragment } from '../../../ui/settings/docsLinks';
+import { GoogleCredentialStore } from '../auth/GoogleCredentialStore';
 
 export function renderGoogleSettings(
   containerEl: HTMLElement,
@@ -17,6 +18,7 @@ export function renderGoogleSettings(
   rerender: () => void
 ): void {
   const authManager = new GoogleAuthManager(plugin);
+  const credentialStore = new GoogleCredentialStore(plugin);
 
   new Setting(containerEl)
     .setName(t('google.title'))
@@ -62,8 +64,12 @@ export function renderGoogleSettings(
       .setDesc(t('google.customCredentials.clientSecret.description'))
       .addText(text => {
         text.inputEl.type = 'password';
-        text.setValue(PluginState.getSettings().googleClientSecret).onChange(async value => {
-          PluginState.getSettings().googleClientSecret = value;
+        text.setPlaceholder(
+          credentialStore.getClientSecret() ? 'Stored in Obsidian SecretStorage' : ''
+        );
+        text.onChange(async value => {
+          credentialStore.setClientSecret(value);
+          PluginState.getSettings().googleClientSecret = '';
           await PluginState.saveSettings();
         });
       });
